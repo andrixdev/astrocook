@@ -1063,19 +1063,19 @@ def klodufy_tidalstrip_anim_frame (frame, index, type):
         print(error_start + "[klodufy_tidalstrip_anim_frame] Error - unknown type: " + type + error_end)
         
     # source_file = "./data/tidalstrip/high-res-test/" + type + "/" + file_prefix + "_output00" + str(frame) + "_GID0009_res128.dat"
-    source_file = "./data/tidalstrip/high-res-test/density_output00236_GID0009.map"
+    source_file = "./data/tidalstrip/high-res-frame/density_output00284_GID0009_res512.dat"
     file_type_token = "DAT"
     # size = 128
     size = 512
     quality = "high"
-    dest_path = "tidalstrip/high-res-test/" + type + "/"
+    dest_path = "tidalstrip/high-res-frame/"
     dest_file_name = "klo-tidal-" + type + "-" + str(size) + "-anim-" + prepend_zeros(str(index), 3)
     testing_density = 1/1 # 1/1 is full rendering
     nb_logs = 20
-    skip_scanning = True
+    skip_scanning = False
     
     klodufy (source_file, file_type_token, size, dimensions, minmaxs, quality, dest_path, dest_file_name, testing_density, nb_logs, skip_scanning)
-# klodufy_tidalstrip_anim_frame (236, 0, "rho")
+# klodufy_tidalstrip_anim_frame (284, 0, "rho")
 def klodufy_tidalstrip_full_46_anim ():
     times = np.loadtxt("./data/tidalstrip/46-frames/filtered_times_all.txt")
     size = len(times)
