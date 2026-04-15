@@ -1,4 +1,4 @@
-# Astroviz
+# Astrocook
 
 Python scripts to generate 2D and 3D textures for Unity out of various astrophysics data formats  
 
