@@ -179,6 +179,17 @@ def prepare_data_cube (source_file, file_type_token, dimensionality):
         f.close()
         
         return data
+
+    elif (file_type_token == "HDF5"):
+        import h5py
+        
+        with h5py.File(source_file, "r") as f:
+            # Get the first dataset in the file
+            dataset_name = list(f.keys())[0]
+            data = f[dataset_name][:]
+        
+        print("Data shape is " + str(data.shape) + " with a total of " + str(data.size) + " elements.")
+        return data
         
     else:
         print("[prepare_data_cube(...)] Unknown file type token: " + file_type_token)
@@ -1091,24 +1102,45 @@ def klodufy_tidalstrip_full_46_anim ():
     print("Generated " + str(size) + " animation frames.")
 # klodufy_tidalstrip_full_46_anim()
 
+# ISOLAGAL!
+def klodufy_isolagal_gas ():
 
-source_file = "./data/maximerey/output_00081/hydro_00081.out00003"
-dimensionality = 1
+    dimensions = [ ["rho", "log"] ]
+    minmaxs = [ [-8, 1] ]
+    file_prefix = "density"
 
-f = FortranFile(os.path.expanduser(source_file), 'r')
+    source_file = "./data/isolagal/1-frame/isolagal_gas_cube.h5"
+    file_type_token = "HDF5"
+    size = 256
+    quality = "high"
+    dest_path = "isolagal/1-frame/"
+    dest_file_name = "isolagal-gas-rho-" + str(size)
+    testing_density = 1/1 # 1/1 is full rendering
+    nb_logs = 20
+    skip_scanning = True
+    
+    klodufy (source_file, file_type_token, size, dimensions, minmaxs, quality, dest_path, dest_file_name, testing_density, nb_logs, skip_scanning)
+klodufy_isolagal_gas()
+
+
+
+# source_file = "./data/maximerey/output_00081/hydro_00081.out00003"
+# dimensionality = 1
+
+# f = FortranFile(os.path.expanduser(source_file), 'r')
         
-# Read all records into a list
-data_list = []
-try:
-    while True:
-        record = f.read_reals(np.float32)
-        data_list.extend(record)
-except:
-    pass  # End of file
+# # Read all records into a list
+# data_list = []
+# try:
+#     while True:
+#         record = f.read_reals(np.float32)
+#         data_list.extend(record)
+# except:
+#     pass  # End of file
 
-f.close()
+# f.close()
 
-# Convert to numpy array
-data = np.array(data_list)
-print("Data shape is " + str(data.shape) + " with a total of " + str(data.size) + " elements.")
-print(data)
+# # Convert to numpy array
+# data = np.array(data_list)
+# print("Data shape is " + str(data.shape) + " with a total of " + str(data.size) + " elements.")
+# print(data)
