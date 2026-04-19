@@ -15,7 +15,7 @@ import sarracen
 import datetime
 import numpy as np
 
-# file_type_token: "PHANTOM", "SHAMROCK" or "NUMPY"
+# file_type_token: "PHANTOM", "SHAMROCK", "NUMPY", "TXT" or "HDF5"
 def prepare_tracers_data (source_file, file_type_token):
     
     if (file_type_token == "PHANTOM"):
@@ -46,6 +46,29 @@ def prepare_tracers_data (source_file, file_type_token):
         
         return data
         
+    elif (file_type_token == "HDF5"):
+        import h5py
+        
+        with h5py.File(source_file, "r") as f:
+            # List all keys
+            keys = list(f.keys())
+
+            # Reorder keys to have x, y and z first if they exist
+            for dim in ["z", "y", "x"]:
+                if dim in keys:
+                    keys.remove(dim)
+                    keys.insert(0, dim)
+
+            print("Keys: %s" % keys)
+            
+            # Load all datasets and stack them
+            datasets = [np.array(f[key]) for key in keys]
+            data = np.column_stack(datasets) if len(datasets) > 1 else np.array(datasets[0])
+            
+            print("Data shape is " + str(data.shape) + " with a total of " + str(data.size) + " elements.")
+            
+            return data
+
     else:
         print("[prepare_tracers_data(...)] Unknown file type token: " + file_type_token)
         
@@ -70,8 +93,8 @@ def remap (input, source_min, source_max, target_min, target_max, clamp_mode):
     else:
         return target_min + (target_max - target_min) * (input - source_min) / (source_max - source_min)
 
-# Read SPH tracers particles data
-def sph_textufy (source_file, file_type_token, dest_path, dest_file_name, dimensions, kept_dimensions, minmaxs, testing_density, nb_logs, skip_scanning, only_scanning):
+# Read particles tracers particles data
+def particles_textufy (source_file, file_type_token, dest_path, dest_file_name, dimensions, kept_dimensions, minmaxs, testing_density, nb_logs, skip_scanning, only_scanning):
     
     # Testing mode inits
     testing_density = min(1, testing_density) # Make sure it don't go krazy (> 1)
@@ -90,6 +113,7 @@ def sph_textufy (source_file, file_type_token, dest_path, dest_file_name, dimens
     # Get dimensions
     dims = len(dimensions)
     count = data.shape[0]
+    # count = data.shape[1]
     actual_count = math.floor(count * testing_density)
     
     log_ratio = "all of " if testing_value == 1 else ("1 in " + str(testing_value) + " of all ")
@@ -133,7 +157,9 @@ def sph_textufy (source_file, file_type_token, dest_path, dest_file_name, dimens
                 # Grab data value basic way (just the order)
                 elif (file_type_token == "NUMPY" or file_type_token == "TXT"):
                     val = data[ii][d]
-                    
+                
+                elif (file_type_token == "HDF5"):
+                    val = data[ii][d]
                     
                 # Checking mode
                 if (dimension_mode == "log"):
@@ -203,9 +229,9 @@ def sph_textufy (source_file, file_type_token, dest_path, dest_file_name, dimens
                     val = data.iloc[jj][dimension_name]
                     
                 # Grab data value basic way (just the order)
-                elif (file_type_token == "NUMPY" or file_type_token == "TXT"):
+                elif (file_type_token == "NUMPY" or file_type_token == "TXT" or file_type_token == "HDF5"):
                     val = data[jj][d]
-                    
+
                 # Checking mode
                 if (dimension_mode == "log"):
                     val = math.log10(val)
@@ -235,42 +261,43 @@ def sph_textufy (source_file, file_type_token, dest_path, dest_file_name, dimens
         end_time = datetime.datetime.now()
         delta = end_time.timestamp() - (mid_time.timestamp() if (not skip_scanning) else start_time.timestamp())
         print("Normalized data in: " + str(round(delta, 2)) + " seconds.")
+        
+        # Conclude
+        print("File " + dest_file_name + ".txt was created")
     
-    # Conclude
-    print("File " + dest_file_name + ".txt was created")
 
-def sph_textufy_disktilt ():
+def particles_textufy_disktilt ():
     dimensions = [ ["x", "linear", "HQ"], ["y", "linear", "HQ"], ["z", "linear", "HQ"], ["vx", "linear", "LQ"], ["vy", "linear", "LQ"], ["vz", "linear", "LQ"], ["rho", "log", "LQ"], ["soundspeed", "log", "LQ"] ]
     
     source_file = "./data/disktilt/disktilt_fulldump_0314.sham"
     file_type_token = "SHAMROCK"
     dest_path = "disktilt/test/"
-    dest_file_name = "sph-disktilt-full-0314-xyzvxyzrhosound"
+    dest_file_name = "particles-disktilt-full-0314-xyzvxyzrhosound"
     minmaxs = [ [-1.8, 1.8], [-1.8, 1.8], [-1.8, 1.8], [-1E-3, 1E-3], [-1E-3, 1E-3], [-1E-3, 1E-3], [-10, -3.5], [-6.3, -5.3] ]
     testing_density = 1/100 # 1/1 is full rendering
 
     # source_file = "./data/disktilt/disktilt_dump_0098.sham"
     # file_type_token = "SHAMROCK"
     # dest_path = "disktilt/test/"
-    # dest_file_name = "sph-disktilt-reduced-xyzvxyzrhosound"
+    # dest_file_name = "particles-disktilt-reduced-xyzvxyzrhosound"
     # minmaxs = [ [-1.8, 1.8], [-1.8, 1.8], [-1.8, 1.8], [-1E-3, 1E-3], [-1E-3, 1E-3], [-1E-3, 1E-3], [-6.5, -3.5], [-6.3, -5.3] ]
     # testing_density = 1/10 # 1/1 is full rendering
     
     nb_logs = 10
     skip_scanning = False
 
-    sph_textufy(source_file, file_type_token, dest_path, dest_file_name, dimensions, minmaxs, testing_density, nb_logs, skip_scanning)
-# sph_textufy_disktilt()
+    particles_textufy(source_file, file_type_token, dest_path, dest_file_name, dimensions, minmaxs, testing_density, nb_logs, skip_scanning)
+# particles_textufy_disktilt()
 
 # OBSOLETE
-def sph_textufy_disktilt_frame (frame, index):
+def particles_textufy_disktilt_frame (frame, index):
     print("Generatig frame " + str(frame) + " of index " + str(index))
     
     frame_index = prepend_zeros(frame, 4)
     source_file = "./data/disktilt/99-frames/dump_" + frame_index + ".sham"
     file_type_token = "SHAMROCK"
     dest_path = "disktilt/99-frames/"
-    dest_file_name = "sph-disktilt-reduced-" + frame_index
+    dest_file_name = "particles-disktilt-reduced-" + frame_index
     pos_only = True
     rho_logarithmic_mode = False
     soundspeed_logarithmic_mode = False
@@ -286,15 +313,15 @@ def sph_textufy_disktilt_frame (frame, index):
     nb_logs = 2
     skip_scanning = True
 
-    sph_textufy(source_file, file_type_token, dest_path, dest_file_name, pos_only, rho_logarithmic_mode, soundspeed_logarithmic_mode, min_pos, max_pos, min_vel, max_vel, min_rho, max_rho, min_soundspeed, max_soundspeed, testing_density, nb_logs, skip_scanning)
-def sph_textufy_disktilt_full_99_anim():
-    print("Generating 99 sph animation frames with positions...")
+    particles_textufy(source_file, file_type_token, dest_path, dest_file_name, pos_only, rho_logarithmic_mode, soundspeed_logarithmic_mode, min_pos, max_pos, min_vel, max_vel, min_rho, max_rho, min_soundspeed, max_soundspeed, testing_density, nb_logs, skip_scanning)
+def particles_textufy_disktilt_full_99_anim():
+    print("Generating 99 particles animation frames with positions...")
     
     for f in range(0, 98 + 1):
-        sph_textufy_disktilt_frame(f, f)
+        particles_textufy_disktilt_frame(f, f)
         
     print("Generated 99 animation frames.")
-# sph_textufy_disktilt_full_99_anim()
+# particles_textufy_disktilt_full_99_anim()
 
 def textufy_dwarfgal_frame (frame, index):
     print("Generatig frame " + str(frame) + " of index " + str(index))
@@ -318,7 +345,7 @@ def textufy_dwarfgal_frame (frame, index):
     skip_scanning = False
     only_scanning = False
 
-    sph_textufy(source_file, file_type_token, dest_path, dest_file_name, dimensions, kept_dimensions, minmaxs, testing_density, nb_logs, skip_scanning, only_scanning)
+    particles_textufy(source_file, file_type_token, dest_path, dest_file_name, dimensions, kept_dimensions, minmaxs, testing_density, nb_logs, skip_scanning, only_scanning)
 def textufy_dwarfgal_full_100_anim():
     print("Generating 100 animation frames with positions and rho...")
     
@@ -347,7 +374,7 @@ def textufy_zoomin ():
     skip_scanning = True
     only_scanning = False
     
-    sph_textufy(source_file, file_type_token, dest_path, dest_file_name, dimensions, kept_dimensions, minmaxs, testing_density, nb_logs, skip_scanning, only_scanning)
+    particles_textufy(source_file, file_type_token, dest_path, dest_file_name, dimensions, kept_dimensions, minmaxs, testing_density, nb_logs, skip_scanning, only_scanning)
 # textufy_zoomin()
 
 def textufy_binarydisk_frame (frame, index):
@@ -367,13 +394,13 @@ def textufy_binarydisk_frame (frame, index):
     source_file = "./data/binarydisk/102-frames/orb0m02gprev_" + str(frame)
     file_type_token = "PHANTOM"
     dest_path = "binarydisk/102-frames/"
-    dest_file_name = "sph-binarydisk-" + str(index)
+    dest_file_name = "particles-binarydisk-" + str(index)
     testing_density = 1/1 # 1/1 is full rendering
     nb_logs = 2
     skip_scanning = True
     only_scanning = False
     
-    sph_textufy(source_file, file_type_token, dest_path, dest_file_name, dimensions, kept_dimensions, minmaxs, testing_density, nb_logs, skip_scanning, only_scanning)
+    particles_textufy(source_file, file_type_token, dest_path, dest_file_name, dimensions, kept_dimensions, minmaxs, testing_density, nb_logs, skip_scanning, only_scanning)
 def textufy_binarydisk_full_102_anim():
     start_index = 10#0
     end_index = 101
@@ -403,7 +430,7 @@ def textufy_fracturings_frame_xyz():
     only_scanning = True
     # Scanning at 1/1 takes 40 minutes
 
-    sph_textufy(source_file, file_type_token, dest_path, dest_file_name, dimensions, kept_dimensions, minmaxs, testing_density, nb_logs, skip_scanning, only_scanning)
+    particles_textufy(source_file, file_type_token, dest_path, dest_file_name, dimensions, kept_dimensions, minmaxs, testing_density, nb_logs, skip_scanning, only_scanning)
 # textufy_fracturings_frame_xyz()
 def textufy_fracturings_frame_xyzhvxvyvzu():
     dimensions = [ ["x", "linear", "HQ"], ["y", "linear", "HQ"], ["z", "linear", "HQ"], ["hpart", "log", "HQ"], ["vx", "linear", "LQ"], ["vy", "linear", "LQ"], ["vz", "linear", "LQ"],  ["uint", "log", "HQ"] ]
@@ -419,5 +446,49 @@ def textufy_fracturings_frame_xyzhvxvyvzu():
     skip_scanning = True
     only_scanning = False
 
-    sph_textufy(source_file, file_type_token, dest_path, dest_file_name, dimensions, kept_dimensions, minmaxs, testing_density, nb_logs, skip_scanning, only_scanning)
+    particles_textufy(source_file, file_type_token, dest_path, dest_file_name, dimensions, kept_dimensions, minmaxs, testing_density, nb_logs, skip_scanning, only_scanning)
 # textufy_fracturings_frame_xyzhvxvyvzu()
+
+def textufy_isolagal_stars_xyz():
+    dimensions = [
+        ["x", "linear", "HQ"],
+        ["y", "linear", "HQ"],
+        ["z", "linear", "HQ"],
+        ["mass", "log", "HQ"]
+    ]
+    
+    source_file = "./data/isolagal/1-frame/isolagal_stars.h5"
+    file_type_token = "HDF5"
+    dest_path = "isolagal/1-frame/"
+    dest_file_name = "isolagal-stars-xyz-test"
+    minmaxs = [ [-40, 40], [-40, 40], [-40, 40], [-5.5, -4.5] ]
+    kept_dimensions = [1, 1, 1, 0]
+    testing_density = 1/1 # 1/1 is full rendering
+    nb_logs = 15
+    skip_scanning = True
+    only_scanning = False
+
+    particles_textufy(source_file, file_type_token, dest_path, dest_file_name, dimensions, kept_dimensions, minmaxs, testing_density, nb_logs, skip_scanning, only_scanning)
+# textufy_isolagal_stars_xyz()
+def textufy_isolagal_gas_xyz():
+    dimensions = [
+        ["x", "linear", "HQ"],
+        ["y", "linear", "HQ"],
+        ["z", "linear", "HQ"],
+        ["dx", "linear", "LQ"],
+        ["rho", "log", "LQ"]
+    ]
+    
+    source_file = "./data/isolagal/1-frame/isolagal_gas.h5"
+    file_type_token = "HDF5"
+    dest_path = "isolagal/1-frame/"
+    dest_file_name = "isolagal-gas-xyz"
+    minmaxs = [ [-50, 50], [-50, 50], [-50, 50], [0, 1], [-8, 1] ]
+    kept_dimensions = [1, 1, 1, 1, 1]
+    testing_density = 1/1 # 1/1 is full rendering
+    nb_logs = 15
+    skip_scanning = True
+    only_scanning = False
+
+    particles_textufy(source_file, file_type_token, dest_path, dest_file_name, dimensions, kept_dimensions, minmaxs, testing_density, nb_logs, skip_scanning, only_scanning)
+textufy_isolagal_gas_xyz()

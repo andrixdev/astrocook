@@ -14,7 +14,7 @@ import datetime
 
 error_start = "\033[91m"
 error_end = "\033[0m"
-    
+
 def remap (input, source_min, source_max, target_min, target_max, clamp_mode):
     if (clamp_mode & (input < source_min)):
         return target_min
@@ -160,7 +160,7 @@ def prepend_zeros (value, target_length):
         result = "0" + str(result)
         
     return result
-    
+
 # file_type_token: "NUMPY" or "DAT"
 def prepare_data_cube (source_file, file_type_token, dimensionality):
     
@@ -456,7 +456,6 @@ def klodufy_txt (source_file, size, source_xyz_min, source_xyz_max, quality, des
     write_unity_footer(destination_file)
     
     print("Done!")
-
 
 
 # OBSOLETE BIFLUID
@@ -1091,3 +1090,25 @@ def klodufy_tidalstrip_full_46_anim ():
         
     print("Generated " + str(size) + " animation frames.")
 # klodufy_tidalstrip_full_46_anim()
+
+
+source_file = "./data/maximerey/output_00081/hydro_00081.out00003"
+dimensionality = 1
+
+f = FortranFile(os.path.expanduser(source_file), 'r')
+        
+# Read all records into a list
+data_list = []
+try:
+    while True:
+        record = f.read_reals(np.float32)
+        data_list.extend(record)
+except:
+    pass  # End of file
+
+f.close()
+
+# Convert to numpy array
+data = np.array(data_list)
+print("Data shape is " + str(data.shape) + " with a total of " + str(data.size) + " elements.")
+print(data)
