@@ -184,9 +184,20 @@ def prepare_data_cube (source_file, file_type_token, dimensionality):
         import h5py
         
         with h5py.File(source_file, "r") as f:
-            # Get the first dataset in the file
-            dataset_name = list(f.keys())[0]
-            data = f[dataset_name][:]
+            # List all keys
+            keys = list(f.keys())
+
+            # Reorder keys to have x, y and z first if they exist
+            for dim in ["z", "y", "x"]:
+                if dim in keys:
+                    keys.remove(dim)
+                    keys.insert(0, dim)
+
+            print("Keys: %s" % keys)
+            
+            # Load all datasets and stack them
+            datasets = [np.array(f[key]) for key in keys]
+            data = np.column_stack(datasets) if len(datasets) > 1 else np.array(datasets[0])
         
         print("Data shape is " + str(data.shape) + " with a total of " + str(data.size) + " elements.")
         return data
@@ -277,11 +288,17 @@ def klodufy (source_file, file_type_token, size, dimensions, minmaxs, quality, d
                         else:
                             val = data[aa][bb][cc][d]
                         
+                        # Checking mode
                         if (dimension_mode == "log"):
-                            val = math.log10(val)
+                            if (val <= 0):
+                                val = float('-inf')
+                            else:
+                                val = math.log10(val)
                             
                         # Rounding (5 digits just for the scan)
-                        val = round_to_n(val, 5)
+                        
+                        if (val != float('-inf')):
+                            val = round_to_n(val, 5)
                         
                         # Update max value
                         if (val > real_minmaxs[d][1]):
@@ -333,6 +350,10 @@ def klodufy (source_file, file_type_token, size, dimensions, minmaxs, quality, d
                     dimension_name = dimensions[d][0]
                     dimension_mode = dimensions[d][1]
                     
+                    # Get minmaxs
+                    min_val = minmaxs[d][0]
+                    max_val = minmaxs[d][1]
+
                     # Grab data
                     if (not is_cell_array):
                         val = data[aa][bb][cc]
@@ -341,11 +362,12 @@ def klodufy (source_file, file_type_token, size, dimensions, minmaxs, quality, d
                     
                     # Checking mode
                     if (dimension_mode == "log"):
-                        val = math.log10(val)
+                        if (val <= 0):
+                            val = min_val
+                        else:
+                            val = math.log10(val)
                         
                     # Remap
-                    min_val = minmaxs[d][0]
-                    max_val = minmaxs[d][1]
                     val = round(remap(val, min_val, max_val, 0, max_resolution, True))
                     hex_value = parse_int_to_formatted_hex(val, quality)
                     
@@ -1120,27 +1142,45 @@ def klodufy_isolagal_gas ():
     skip_scanning = True
     
     klodufy (source_file, file_type_token, size, dimensions, minmaxs, quality, dest_path, dest_file_name, testing_density, nb_logs, skip_scanning)
-klodufy_isolagal_gas()
+# klodufy_isolagal_gas()
 
+# FRED THOMPSON STAR CLUSTER (has xyz so extracted in particles_textufy)
+def klodufy_fredthompson_starcluster ():
 
+    dimensions = [ ["rho", "log"], ["x", "linear"], ["y", "linear"], ["z", "linear"] ]
+    minmaxs = [ [-50, 50], [-50, 50], [-50, 50], [-50, 50] ]
+    file_prefix = "density"
 
-# source_file = "./data/maximerey/output_00081/hydro_00081.out00003"
-# dimensionality = 1
+    source_file = "./data/fredthompson/H10cluster_8pc_output176_gas.h5"
+    # source_file = "./data/fredthompson/H10cluster_8pc_output176_stars.h5"
+    # source_file = "./data/fredthompson/H10cluster_8pc_output176_gas.h5"
+    file_type_token = "HDF5"
+    size = 256
+    quality = "high"
+    dest_path = "fredthompson/"
+    dest_file_name = "fredthompson-starcluster-rho-" + str(size)
+    testing_density = 1/10 # 1/1 is full rendering
+    nb_logs = 20
+    skip_scanning = False
+    
+    klodufy (source_file, file_type_token, size, dimensions, minmaxs, quality, dest_path, dest_file_name, testing_density, nb_logs, skip_scanning)
+# klodufy_fredthompson_starcluster()
 
-# f = FortranFile(os.path.expanduser(source_file), 'r')
-        
-# # Read all records into a list
-# data_list = []
-# try:
-#     while True:
-#         record = f.read_reals(np.float32)
-#         data_list.extend(record)
-# except:
-#     pass  # End of file
+# YOHANDUBOIS GALAXY
+def klodufy_yohandubois_galaxy ():
+    dimensions = [ ["rho", "log"] ]
+    minmaxs = [ [-7, -3] ]
+    file_prefix = "density"
 
-# f.close()
-
-# # Convert to numpy array
-# data = np.array(data_list)
-# print("Data shape is " + str(data.shape) + " with a total of " + str(data.size) + " elements.")
-# print(data)
+    source_file = "./data/yohandubois/1-frame/cube_gasdensity_output_00070.dat"
+    file_type_token = "DAT"
+    size = 128
+    quality = "high"
+    dest_path = "yohandubois/1-frame/"
+    dest_file_name = "yohandubois-galaxy-rho-" + str(size)
+    testing_density = 1/1 # 1/1 is full rendering
+    nb_logs = 20
+    skip_scanning = False
+    
+    klodufy (source_file, file_type_token, size, dimensions, minmaxs, quality, dest_path, dest_file_name, testing_density, nb_logs, skip_scanning)
+klodufy_yohandubois_galaxy ()

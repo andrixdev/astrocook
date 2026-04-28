@@ -14,6 +14,8 @@ import math
 import sarracen
 import datetime
 import numpy as np
+import h5py
+from scipy.io import readsav
 
 # file_type_token: "PHANTOM", "SHAMROCK", "NUMPY", "TXT" or "HDF5"
 def prepare_tracers_data (source_file, file_type_token):
@@ -47,7 +49,6 @@ def prepare_tracers_data (source_file, file_type_token):
         return data
         
     elif (file_type_token == "HDF5"):
-        import h5py
         
         with h5py.File(source_file, "r") as f:
             # List all keys
@@ -68,6 +69,27 @@ def prepare_tracers_data (source_file, file_type_token):
             print("Data shape is " + str(data.shape) + " with a total of " + str(data.size) + " elements.")
             
             return data
+
+    elif (file_type_token == "SAV"):
+        
+        cell = readsav(source_file).cell
+        x, y, z, dx = cell.x[0], cell.y[0], cell.z[0], cell.dx[0]
+        variables = cell[0][4]
+        rho = variables[0]
+        pressure = variables[4]
+
+        data = np.column_stack([x, y, z, rho])
+
+        print("Data shape is " + str(data.shape) + " with a total of " + str(data.size) + " elements.")
+            
+        return data
+
+        # #cell center position and size
+        # x, y, z, dx = cell.x[0], cell.y[0], cell.z[0], cell.dx[0]
+        # var  = cell[0][4]
+        # #hydro variables, density, vx, vy, vz, pressure, metallicity, ...
+        # d = var[0]; p = var[4]
+
 
     else:
         print("[prepare_tracers_data(...)] Unknown file type token: " + file_type_token)
@@ -93,8 +115,11 @@ def remap (input, source_min, source_max, target_min, target_max, clamp_mode):
     else:
         return target_min + (target_max - target_min) * (input - source_min) / (source_max - source_min)
 
+def is_within_box (x, y, z, x_center, y_center, z_center, radius):
+    return x >= x_center - radius and x <= x_center + radius and y >= y_center - radius and y <= y_center + radius and z >= z_center - radius and z <= z_center + radius
+
 # Read particles tracers particles data
-def particles_textufy (source_file, file_type_token, dest_path, dest_file_name, dimensions, kept_dimensions, minmaxs, testing_density, nb_logs, skip_scanning, only_scanning):
+def particles_textufy (source_file, file_type_token, dest_path, dest_file_name, dimensions, kept_dimensions, minmaxs, testing_density, nb_logs, skip_scanning, only_scanning, zoombox=None):
     
     # Testing mode inits
     testing_density = min(1, testing_density) # Make sure it don't go krazy (> 1)
@@ -155,10 +180,7 @@ def particles_textufy (source_file, file_type_token, dest_path, dest_file_name, 
                     val = data.iloc[ii][dimension_name]
                     
                 # Grab data value basic way (just the order)
-                elif (file_type_token == "NUMPY" or file_type_token == "TXT"):
-                    val = data[ii][d]
-                
-                elif (file_type_token == "HDF5"):
+                elif (file_type_token == "NUMPY" or file_type_token == "TXT" or file_type_token == "HDF5" or file_type_token == "SAV"):
                     val = data[ii][d]
                     
                 # Checking mode
@@ -229,7 +251,7 @@ def particles_textufy (source_file, file_type_token, dest_path, dest_file_name, 
                     val = data.iloc[jj][dimension_name]
                     
                 # Grab data value basic way (just the order)
-                elif (file_type_token == "NUMPY" or file_type_token == "TXT" or file_type_token == "HDF5"):
+                elif (file_type_token == "NUMPY" or file_type_token == "TXT" or file_type_token == "HDF5" or file_type_token == "SAV"):
                     val = data[jj][d]
 
                 # Checking mode
@@ -247,7 +269,12 @@ def particles_textufy (source_file, file_type_token, dest_path, dest_file_name, 
                 if (is_dimension_kept):
                     if (d > 0):
                         row = row + " "
-                    row = row + str(val)
+                    
+                    if (zoombox):
+                        if (is_within_box(data[jj][0], data[jj][1], data[jj][2], zoombox[0], zoombox[1], zoombox[2], zoombox[3])):
+                            row = row + str(val)
+                    else:
+                        row = row + str(val)
                 
             if (j % max(1, int(round(actual_count/nb_logs))) == 0):
                 print(str(j) + "th remapped row is: " + row)
@@ -491,4 +518,61 @@ def textufy_isolagal_gas_xyz():
     only_scanning = False
 
     particles_textufy(source_file, file_type_token, dest_path, dest_file_name, dimensions, kept_dimensions, minmaxs, testing_density, nb_logs, skip_scanning, only_scanning)
-textufy_isolagal_gas_xyz()
+# textufy_isolagal_gas_xyz()
+
+# Fred Thompson star cluster
+def textufy_fred_thompson_starcluster_gas_xyzrho():
+    dimensions = [ ["x", "linear", "HQ"], ["y", "linear", "HQ"], ["z", "linear", "HQ"], ["dx", "log", "LQ"], ["rho", "log", "LQ"] ]
+    minmaxs = [ [-2000, 2000], [-2000, 2000], [-2000, 2000], [-5, 5], [-31, -20] ]
+    kept_dimensions = [1, 1, 1, 0, 1]
+    file_prefix = "xyzrho"
+    
+    source_file = "./data/fredthompson/1-frame/H10cluster_8pc_output176_gas.h5"
+    file_type_token = "HDF5"
+    dest_path = "fredthompson/1-frame/"
+    dest_file_name = "fredthompson-gas-xyzrho"
+    testing_density = 1/1 # 1/1 is full rendering
+    nb_logs = 15
+    skip_scanning = True
+    only_scanning = False
+
+    particles_textufy(source_file, file_type_token, dest_path, dest_file_name, dimensions, kept_dimensions, minmaxs, testing_density, nb_logs, skip_scanning, only_scanning)
+# textufy_fred_thompson_starcluster_gas_xyzrho()
+
+def textufy_fred_thompson_starcluster_stars_xyzmass():
+    dimensions = [ ["x", "linear", "HQ"], ["y", "linear", "HQ"], ["z", "linear", "HQ"], ["mass", "log", "LQ"] ]
+    minmaxs = [ [-2000, 2000], [-2000, 2000], [-2000, 2000], [-3, 3.5] ]
+    kept_dimensions = [1, 1, 1, 1]
+    file_prefix = "xyzmass"
+    
+    source_file = "./data/fredthompson/1-frame/H10cluster_8pc_output176_stars.h5"
+    file_type_token = "HDF5"
+    dest_path = "fredthompson/1-frame/"
+    dest_file_name = "fredthompson-stars-xyzmass"
+    testing_density = 1/1 # 1/1 is full rendering
+    nb_logs = 15
+    skip_scanning = False
+    only_scanning = False
+
+    particles_textufy(source_file, file_type_token, dest_path, dest_file_name, dimensions, kept_dimensions, minmaxs, testing_density, nb_logs, skip_scanning, only_scanning)
+# textufy_fred_thompson_starcluster_stars_xyzmass()
+
+# Cheonsu Kang big box
+def textufy_cheonsukang_bigbox ():
+    dimensions = [ ["x", "linear", "HQ"], ["y", "linear", "HQ"], ["z", "linear", "HQ"], ["rho", "log", "LQ"] ]
+    minmaxs = [ [0, 1], [0, 1], [0, 1], [-3.5, 7] ]
+    zoombox = [ 0.4987918675078839570, 0.5031370643040111723, 0.5003282700126294724, 0.002485454994227498295 ] # x_center, y_center, z_center, radius
+    kept_dimensions = [1, 1, 1, 1]
+    file_prefix = "xyzrho"
+    
+    source_file = "./data/cheonsukang/1-frame/cell_00373.sav"
+    file_type_token = "SAV"
+    dest_path = "cheonsukang/1-frame/"
+    dest_file_name = "cheonsukang-bigbox-xyzrho"
+    testing_density = 1/10 # 1/1 is full rendering
+    nb_logs = 15
+    skip_scanning = True
+    only_scanning = False
+
+    particles_textufy(source_file, file_type_token, dest_path, dest_file_name, dimensions, kept_dimensions, minmaxs, testing_density, nb_logs, skip_scanning, only_scanning, zoombox=zoombox)
+textufy_cheonsukang_bigbox()
