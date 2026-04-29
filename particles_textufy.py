@@ -33,7 +33,7 @@ def prepare_tracers_data (source_file, file_type_token):
         # print(sdf.describe())
         
         return sdf
-        
+
     elif (file_type_token == "NUMPY"):
         data = np.load(source_file)
         
@@ -72,13 +72,19 @@ def prepare_tracers_data (source_file, file_type_token):
 
     elif (file_type_token == "SAV"):
         
-        cell = readsav(source_file).cell
+        sav = readsav(source_file)
+        print(sav.keys())
+        cell = sav.cell
         x, y, z, dx = cell.x[0], cell.y[0], cell.z[0], cell.dx[0]
         variables = cell[0][4]
         rho = variables[0]
+        vx = variables[1]
+        vy = variables[2]
+        vz = variables[3]
         pressure = variables[4]
+        metallicity = variables[5]
 
-        data = np.column_stack([x, y, z, rho])
+        data = np.column_stack([x, y, z, vx, vy, vz, rho, pressure, metallicity])
 
         print("Data shape is " + str(data.shape) + " with a total of " + str(data.size) + " elements.")
             
@@ -89,7 +95,6 @@ def prepare_tracers_data (source_file, file_type_token):
         # var  = cell[0][4]
         # #hydro variables, density, vx, vy, vz, pressure, metallicity, ...
         # d = var[0]; p = var[4]
-
 
     else:
         print("[prepare_tracers_data(...)] Unknown file type token: " + file_type_token)
@@ -218,6 +223,8 @@ def particles_textufy (source_file, file_type_token, dest_path, dest_file_name, 
         print("Scanned data in: " + str(round(delta, 2)) + " seconds.")
     
     # LOOP 2: remap & write
+    is_first_line_written = True
+    is_in_box = True # Init to true to avoid issues when zoombox is not set
     if (not only_scanning):
         for j in range(0, actual_count):
             jj = j * step
@@ -230,6 +237,13 @@ def particles_textufy (source_file, file_type_token, dest_path, dest_file_name, 
             lq_max = 10 ** low_quality_digits
             hq_max = 10 ** high_quality_digits
             
+            # Prepare boolean to check if inside the zoomed box
+            if (zoombox):
+                is_in_box = is_within_box(data[jj][0], data[jj][1], data[jj][2], zoombox[0], zoombox[1], zoombox[2], zoombox[3])
+
+            if (not is_first_line_written):
+                row += "\n"
+
             for d in range(0, dims):
                 dimension_name = dimensions[d][0]
                 dimension_mode = dimensions[d][1]
@@ -271,19 +285,22 @@ def particles_textufy (source_file, file_type_token, dest_path, dest_file_name, 
                         row = row + " "
                     
                     if (zoombox):
-                        if (is_within_box(data[jj][0], data[jj][1], data[jj][2], zoombox[0], zoombox[1], zoombox[2], zoombox[3])):
+                        if (is_in_box):
                             row = row + str(val)
                     else:
                         row = row + str(val)
                 
             if (j % max(1, int(round(actual_count/nb_logs))) == 0):
-                print(str(j) + "th remapped row is: " + row)
+                print(str(j) + "th remapped row is: " + row.lstrip('\n'))
 
-            if (j < actual_count - 1):
-                row += "\n"
-                
-            destination_file.write(row)
-        
+            # Write to file
+            if (zoombox and is_in_box):
+                destination_file.write(row)
+                is_first_line_written = False
+            elif (not zoombox):
+                destination_file.write(row)
+                is_first_line_written = False
+
         # Log normalizing time
         end_time = datetime.datetime.now()
         delta = end_time.timestamp() - (mid_time.timestamp() if (not skip_scanning) else start_time.timestamp())
@@ -538,7 +555,6 @@ def textufy_fred_thompson_starcluster_gas_xyzrho():
 
     particles_textufy(source_file, file_type_token, dest_path, dest_file_name, dimensions, kept_dimensions, minmaxs, testing_density, nb_logs, skip_scanning, only_scanning)
 # textufy_fred_thompson_starcluster_gas_xyzrho()
-
 def textufy_fred_thompson_starcluster_stars_xyzmass():
     dimensions = [ ["x", "linear", "HQ"], ["y", "linear", "HQ"], ["z", "linear", "HQ"], ["mass", "log", "LQ"] ]
     minmaxs = [ [-2000, 2000], [-2000, 2000], [-2000, 2000], [-3, 3.5] ]
@@ -556,23 +572,112 @@ def textufy_fred_thompson_starcluster_stars_xyzmass():
 
     particles_textufy(source_file, file_type_token, dest_path, dest_file_name, dimensions, kept_dimensions, minmaxs, testing_density, nb_logs, skip_scanning, only_scanning)
 # textufy_fred_thompson_starcluster_stars_xyzmass()
+def textufy_fred_thompson_starcluster_clusters_xyzmass():
+    dimensions = [ ["x", "linear", "HQ"], ["y", "linear", "HQ"], ["z", "linear", "HQ"], ["id", "linear", "LQ"], ["mass", "log", "LQ"] ]
+    minmaxs = [ [-2000, 2000], [-2000, 2000], [-2000, 2000], [0, 600], [3, 7] ]
+    kept_dimensions = [1, 1, 1, 1, 1]
+    file_prefix = "xyzmass"
+    
+    source_file = "./data/fredthompson/1-frame/H10cluster_8pc_output176_clusters.h5"
+    file_type_token = "HDF5"
+    dest_path = "fredthompson/1-frame/"
+    dest_file_name = "fredthompson-clusters-xyzmass"
+    testing_density = 1/1 # 1/1 is full rendering
+    nb_logs = 15
+    skip_scanning = False
+    only_scanning = False
+
+    particles_textufy(source_file, file_type_token, dest_path, dest_file_name, dimensions, kept_dimensions, minmaxs, testing_density, nb_logs, skip_scanning, only_scanning)
+# textufy_fred_thompson_starcluster_clusters_xyzmass()
 
 # Cheonsu Kang big box
-def textufy_cheonsukang_bigbox ():
+def textufy_cheonsukang_bigbox_xyzrho():
     dimensions = [ ["x", "linear", "HQ"], ["y", "linear", "HQ"], ["z", "linear", "HQ"], ["rho", "log", "LQ"] ]
-    minmaxs = [ [0, 1], [0, 1], [0, 1], [-3.5, 7] ]
-    zoombox = [ 0.4987918675078839570, 0.5031370643040111723, 0.5003282700126294724, 0.002485454994227498295 ] # x_center, y_center, z_center, radius
+    box_center_x = 0.4987918675078839570
+    box_center_y = 0.5031370643040111723
+    box_center_z = 0.5003282700126294724
+    box_virial_radius = 0.002485454994227498295
+    zoombox = [ box_center_x, box_center_y, box_center_z, box_virial_radius ] # x_center, y_center, z_center, radius
+    minmaxs = [ [box_center_x - box_virial_radius, box_center_x + box_virial_radius], [box_center_y - box_virial_radius, box_center_y + box_virial_radius], [box_center_z - box_virial_radius, box_center_z + box_virial_radius], [-3.5, 7] ]
     kept_dimensions = [1, 1, 1, 1]
     file_prefix = "xyzrho"
     
     source_file = "./data/cheonsukang/1-frame/cell_00373.sav"
     file_type_token = "SAV"
     dest_path = "cheonsukang/1-frame/"
-    dest_file_name = "cheonsukang-bigbox-xyzrho"
-    testing_density = 1/10 # 1/1 is full rendering
+    dest_file_name = "cheonsukang-bigbox-zoomed-xyzrho"
+    testing_density = 1/40 # 1/1 is full rendering
+    nb_logs = 15
+    skip_scanning = False
+    only_scanning = True
+
+    particles_textufy(source_file, file_type_token, dest_path, dest_file_name, dimensions, kept_dimensions, minmaxs, testing_density, nb_logs, skip_scanning, only_scanning, zoombox)
+# textufy_cheonsukang_bigbox_xyzrho()
+def textufy_cheonsukang_bigbox_xyzvxvyvzrhopmetal():
+    dimensions = [ ["x", "linear", "HQ"], ["y", "linear", "HQ"], ["z", "linear", "HQ"], ["vx", "linear", "HQ"], ["vy", "linear", "HQ"], ["vz", "linear", "HQ"], ["rho", "log", "LQ"], ["p", "log", "LQ"], ["metal", "linear", "LQ"] ]
+    box_center_x = 0.4987918675078839570
+    box_center_y = 0.5031370643040111723
+    box_center_z = 0.5003282700126294724
+    box_virial_radius = 0.002485454994227498295
+    zoombox = [ box_center_x, box_center_y, box_center_z, box_virial_radius ] # x_center, y_center, z_center, radius
+    minmaxs = [ [box_center_x - box_virial_radius, box_center_x + box_virial_radius], [box_center_y - box_virial_radius, box_center_y + box_virial_radius], [box_center_z - box_virial_radius, box_center_z + box_virial_radius], [-0.2, 0.2], [-0.2, 0.2], [-0.2, 0.2], [-3.5, 7], [-12, 0], [0, .1] ]
+    kept_dimensions = [1, 1, 1, 1, 1, 1, 1, 1, 1]
+    file_prefix = "xyzvxvyvzrhopmetal"
+
+    source_file = "./data/cheonsukang/1-frame/cell_00373.sav"
+    file_type_token = "SAV"
+    dest_path = "cheonsukang/1-frame/"
+    dest_file_name = "cheonsukang-bigbox-zoomed-xyzvxvyvzrhopmetal"
+    testing_density = 1/4 # 1/1 is full rendering
     nb_logs = 15
     skip_scanning = True
     only_scanning = False
 
-    particles_textufy(source_file, file_type_token, dest_path, dest_file_name, dimensions, kept_dimensions, minmaxs, testing_density, nb_logs, skip_scanning, only_scanning, zoombox=zoombox)
-textufy_cheonsukang_bigbox()
+    particles_textufy(source_file, file_type_token, dest_path, dest_file_name, dimensions, kept_dimensions, minmaxs, testing_density, nb_logs, skip_scanning, only_scanning, zoombox)
+# textufy_cheonsukang_bigbox_xyzvxvyvzrhopmetal()
+
+# James Sunseri
+def textufy_james_sunseri_gas_xyzrho():
+    dimensions = [ ["x", "linear", "HQ"], ["y", "linear", "HQ"], ["z", "linear", "HQ"], ["dx", "log", "LQ"], ["rho", "log", "LQ"] ]
+    box_center_x = 0
+    box_center_y = 0
+    box_center_z = 0
+    box_radius = 0.008
+    zoombox = [ box_center_x, box_center_y, box_center_z, box_radius ] # x_center, y_center, z_center, radius
+    minmaxs = [ [box_center_x - box_radius, box_center_x + box_radius], [box_center_y - box_radius, box_center_y + box_radius], [box_center_z - box_radius, box_center_z + box_radius], [-7, -1], [-4, 7] ]
+    kept_dimensions = [1, 1, 1, 0, 1]
+    file_prefix = "xyzrho"
+    
+    source_file = "./data/jamessunseri/1-frame/MDG_gas.h5"
+    file_type_token = "HDF5"
+    dest_path = "jamessunseri/1-frame/"
+    dest_file_name = "jamessunseri-gas-zoomed-xyzrho"
+    testing_density = 1/13 # 1/1 is full rendering
+    nb_logs = 15
+    skip_scanning = True
+    only_scanning = False
+
+    particles_textufy(source_file, file_type_token, dest_path, dest_file_name, dimensions, kept_dimensions, minmaxs, testing_density, nb_logs, skip_scanning, only_scanning)
+# textufy_james_sunseri_gas_xyzrho()
+def textufy_james_sunseri_stars_xyzmass():
+    dimensions = [ ["x", "linear", "HQ"], ["y", "linear", "HQ"], ["z", "linear", "HQ"], ["mass", "log", "LQ"] ]
+    box_center_x = 0
+    box_center_y = 0
+    box_center_z = 0
+    box_radius = 0.008
+    zoombox = [ box_center_x, box_center_y, box_center_z, box_radius ] # x_center, y_center, z_center, radius
+    minmaxs = [ [box_center_x - box_radius, box_center_x + box_radius], [box_center_y - box_radius, box_center_y + box_radius], [box_center_z - box_radius, box_center_z + box_radius], [-14, -12] ]
+    kept_dimensions = [1, 1, 1, 1]
+    file_prefix = "xyzmass"
+    
+    source_file = "./data/jamessunseri/1-frame/MDG_stars.h5"
+    file_type_token = "HDF5"
+    dest_path = "jamessunseri/1-frame/"
+    dest_file_name = "jamessunseri-stars-zoomed-xyzmass"
+    testing_density = 1/4 # 1/1 is full rendering
+    nb_logs = 15
+    skip_scanning = True
+    only_scanning = False
+
+    particles_textufy(source_file, file_type_token, dest_path, dest_file_name, dimensions, kept_dimensions, minmaxs, testing_density, nb_logs, skip_scanning, only_scanning)
+textufy_james_sunseri_stars_xyzmass()

@@ -1167,7 +1167,7 @@ def klodufy_fredthompson_starcluster ():
 # klodufy_fredthompson_starcluster()
 
 # YOHANDUBOIS GALAXY
-def klodufy_yohandubois_galaxy ():
+def klodufy_yohandubois_galaxy_rho ():
     dimensions = [ ["rho", "log"] ]
     minmaxs = [ [-7, -3] ]
     file_prefix = "density"
@@ -1183,4 +1183,21 @@ def klodufy_yohandubois_galaxy ():
     skip_scanning = False
     
     klodufy (source_file, file_type_token, size, dimensions, minmaxs, quality, dest_path, dest_file_name, testing_density, nb_logs, skip_scanning)
-klodufy_yohandubois_galaxy ()
+# klodufy_yohandubois_galaxy_rho ()
+def klodufy_yohandubois_galaxy_bz ():
+    dimensions = [ ["bz", "linear"] ]
+    minmaxs = [ [-0.00001, 0.00001] ]
+    file_prefix = "bz"
+
+    source_file = "./data/yohandubois/1-frame/cube_bz_output_00070.dat"
+    file_type_token = "DAT"
+    size = 256
+    quality = "high"
+    dest_path = "yohandubois/1-frame/"
+    dest_file_name = "yohandubois-galaxy-bz-" + str(size)
+    testing_density = 1/1 # 1/1 is full rendering
+    nb_logs = 20
+    skip_scanning = False
+    
+    klodufy (source_file, file_type_token, size, dimensions, minmaxs, quality, dest_path, dest_file_name, testing_density, nb_logs, skip_scanning)
+klodufy_yohandubois_galaxy_bz()
