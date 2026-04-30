@@ -1,14 +1,13 @@
-# ANDRIX x CRAL ® 2025 🤙
+# ANDRIX ® 2025-2026 🤙
 # 
-# Generate text files with tracers data to use in Unity for the creation of 2D textures read by a VFX graph
+# Generate text files with particle data to use in Unity for the creation of 2D textures, then sampled and rendered by a Visual Effect Graph (VFX Graph)
 #
 # This file reads data dumps
 # It uses sarracen to read PHANTOM and SHAMROCK dumps
 # It uses numpy to read NUMPY dumps
-#
-# /!\ Warning: install sarracen DEVELOPMENT build
-# sarracen.read_shamrock doesn't exist in stable build
-# install sarracen dev build with "pip install git+https://github.com/ttricco/sarracen.git"
+# It uses numpy to read TXT dumps
+# It uses h5py to read HDF5 dumps
+# It uses scipy.io to read SAV dumps
 
 import math
 import sarracen
@@ -680,4 +679,24 @@ def textufy_james_sunseri_stars_xyzmass():
     only_scanning = False
 
     particles_textufy(source_file, file_type_token, dest_path, dest_file_name, dimensions, kept_dimensions, minmaxs, testing_density, nb_logs, skip_scanning, only_scanning)
-textufy_james_sunseri_stars_xyzmass()
+# textufy_james_sunseri_stars_xyzmass()
+
+# Maxime Rey molecular cloud
+def textufy_maxime_rey_molecularcloud_gas_xyzrho():
+    dimensions = [ ["x", "linear", "HQ"], ["y", "linear", "HQ"], ["z", "linear", "HQ"], ["mass", "log", "LQ"] ]
+    
+    minmaxs = [ [0, 1], [0, 1], [0, 1], [-14, -12] ]
+    kept_dimensions = [1, 1, 1, 1]
+    file_prefix = "xyzmass"
+    
+    source_file = "./data/maximereycloud/1-frame/stars.h5"
+    file_type_token = "HDF5"
+    dest_path = "maximereycloud/1-frame/"
+    dest_file_name = "maximereycloud-gas-xyzmass"
+    testing_density = 1/1 # 1/1 is full rendering
+    nb_logs = 15
+    skip_scanning = False
+    only_scanning = True
+
+    particles_textufy(source_file, file_type_token, dest_path, dest_file_name, dimensions, kept_dimensions, minmaxs, testing_density, nb_logs, skip_scanning, only_scanning)
+textufy_maxime_rey_molecularcloud_gas_xyzrho()
