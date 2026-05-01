@@ -661,7 +661,7 @@ def textufy_james_sunseri_gas_xyzrho():
     skip_scanning = True
     only_scanning = False
 
-    particles_textufy(source_file, file_type_token, dest_path, dest_file_name, dimensions, kept_dimensions, minmaxs, testing_density, nb_logs, skip_scanning, only_scanning)
+    particles_textufy(source_file, file_type_token, dest_path, dest_file_name, dimensions, kept_dimensions, minmaxs, testing_density, nb_logs, skip_scanning, only_scanning, zoombox)
 # textufy_james_sunseri_gas_xyzrho()
 def textufy_james_sunseri_stars_xyzmass():
     dimensions = [ ["x", "linear", "HQ"], ["y", "linear", "HQ"], ["z", "linear", "HQ"], ["mass", "log", "LQ"] ]
@@ -683,7 +683,7 @@ def textufy_james_sunseri_stars_xyzmass():
     skip_scanning = True
     only_scanning = False
 
-    particles_textufy(source_file, file_type_token, dest_path, dest_file_name, dimensions, kept_dimensions, minmaxs, testing_density, nb_logs, skip_scanning, only_scanning)
+    particles_textufy(source_file, file_type_token, dest_path, dest_file_name, dimensions, kept_dimensions, minmaxs, testing_density, nb_logs, skip_scanning, only_scanning, zoombox)
 # textufy_james_sunseri_stars_xyzmass()
 
 # Maxime Rey molecular cloud
@@ -703,7 +703,7 @@ def textufy_maxime_rey_molecularcloud_gas_xyzrho():
     skip_scanning = False
     only_scanning = True
 
-    particles_textufy(source_file, file_type_token, dest_path, dest_file_name, dimensions, kept_dimensions, minmaxs, testing_density, nb_logs, skip_scanning, only_scanning)# textufy_maxime_rey_molecularcloud_gas_xyzrho()
+    particles_textufy(source_file, file_type_token, dest_path, dest_file_name, dimensions, kept_dimensions, minmaxs, testing_density, nb_logs, skip_scanning, only_scanning, zoombox) # textufy_maxime_rey_molecularcloud_gas_xyzrho()
 
 # San Han galaxy cluster
 def textufy_san_han_galaxy_cluster_xyzdensitytemp():
@@ -728,5 +728,32 @@ def textufy_san_han_galaxy_cluster_xyzdensitytemp():
     skip_scanning = True
     only_scanning = False
 
+    particles_textufy(source_file, file_type_token, dest_path, dest_file_name, dimensions, kept_dimensions, minmaxs, testing_density, nb_logs, skip_scanning, only_scanning, zoombox)
+# textufy_san_han_galaxy_cluster_xyzdensitytemp()
+
+# Maxime Rey new cloud
+def textufy_maxime_rey_newcloud_xyzrho():
+    dimensions = [
+        ["x", "linear", "HQ"],
+        ["y", "linear", "HQ"],
+        ["z", "linear", "HQ"],
+        ["dx", "log", "LQ"],
+        ["rho", "log", "LQ"]
+    ]
+    
+    minmaxs = [ [0, 1e+21], [0, 1e+21], [0, 1e+21], [17.5, 19.5], [-28, -19] ]
+    
+    kept_dimensions = [1, 1, 1, 0, 1]
+    file_prefix = "xyzrho"
+    
+    source_file = "./data/maximereynewcloud/1-frame/gas.h5"
+    file_type_token = "HDF5"
+    dest_path = "maximereynewcloud/1-frame/"
+    dest_file_name = "maximereynewcloud-xyzrho"
+    testing_density = 1/1 # 1/1 is full rendering
+    nb_logs = 15
+    skip_scanning = True
+    only_scanning = False
+
     particles_textufy(source_file, file_type_token, dest_path, dest_file_name, dimensions, kept_dimensions, minmaxs, testing_density, nb_logs, skip_scanning, only_scanning)
-textufy_san_han_galaxy_cluster_xyzdensitytemp()
+textufy_maxime_rey_newcloud_xyzrho()
