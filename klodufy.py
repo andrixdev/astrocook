@@ -670,4 +670,4 @@ def klodufy_yohandubois_galaxy_bz ():
     skip_scanning = False
     
     klodufy (source_file, file_type_token, size, dimensions, minmaxs, quality, dest_path, dest_file_name, testing_density, nb_logs, skip_scanning)
-klodufy_yohandubois_galaxy_bz()
+# klodufy_yohandubois_galaxy_bz()

@@ -47,11 +47,16 @@ def prepare_tracers_data (source_file, file_type_token):
         
         return data
         
-    elif (file_type_token == "HDF5"):
+    elif (file_type_token == "HDF5" or file_type_token == "SAN-HDF5"):
         
         with h5py.File(source_file, "r") as f:
             # List all keys
-            keys = list(f.keys())
+            if (file_type_token == "SAN-HDF5"):
+                file = f["data"]
+            elif (file_type_token == "HDF5"):
+                file = f
+
+            keys = list(file.keys())
 
             # Reorder keys to have x, y and z first if they exist
             for dim in ["z", "y", "x"]:
@@ -62,7 +67,7 @@ def prepare_tracers_data (source_file, file_type_token):
             print("Keys: %s" % keys)
             
             # Load all datasets and stack them
-            datasets = [np.array(f[key]) for key in keys]
+            datasets = [np.array(file[key]) for key in keys]
             data = np.column_stack(datasets) if len(datasets) > 1 else np.array(datasets[0])
             
             print("Data shape is " + str(data.shape) + " with a total of " + str(data.size) + " elements.")
@@ -120,11 +125,11 @@ def remap (input, source_min, source_max, target_min, target_max, clamp_mode):
         return target_min + (target_max - target_min) * (input - source_min) / (source_max - source_min)
 
 def is_within_box (x, y, z, x_center, y_center, z_center, radius):
-    return x >= x_center - radius and x <= x_center + radius and y >= y_center - radius and y <= y_center + radius and z >= z_center - radius and z <= z_center + radius
+    return (x >= x_center - radius) and (x <= x_center + radius) and (y >= y_center - radius) and (y <= y_center + radius) and (z >= z_center - radius) and (z <= z_center + radius)
 
-# Read particles tracers particles data
+# Main function to textufy particles data dumps, with options to customize the process
 def particles_textufy (source_file, file_type_token, dest_path, dest_file_name, dimensions, kept_dimensions, minmaxs, testing_density, nb_logs, skip_scanning, only_scanning, zoombox=None):
-    
+
     # Testing mode inits
     testing_density = min(1, testing_density) # Make sure it don't go krazy (> 1)
     testing_value = round(1/testing_density)
@@ -184,7 +189,7 @@ def particles_textufy (source_file, file_type_token, dest_path, dest_file_name, 
                     val = data.iloc[ii][dimension_name]
                     
                 # Grab data value basic way (just the order)
-                elif (file_type_token == "NUMPY" or file_type_token == "TXT" or file_type_token == "HDF5" or file_type_token == "SAV"):
+                elif (file_type_token == "NUMPY" or file_type_token == "TXT" or file_type_token == "HDF5" or file_type_token == "SAN-HDF5" or file_type_token == "SAV"):
                     val = data[ii][d]
                     
                 # Checking mode
@@ -257,14 +262,14 @@ def particles_textufy (source_file, file_type_token, dest_path, dest_file_name, 
                     if (dimension_name == "rho"):
                         val = 1 * (data.iloc[jj]["hpart"] ** 3)
                     else:
-                        val = data.iloc[jj][dimension_name]
-                        
-                        
+                        val = data.iloc[jj][dimension_name]                   
+
+
                 elif (file_type_token == "PHANTOM"):
                     val = data.iloc[jj][dimension_name]
                     
                 # Grab data value basic way (just the order)
-                elif (file_type_token == "NUMPY" or file_type_token == "TXT" or file_type_token == "HDF5" or file_type_token == "SAV"):
+                elif (file_type_token == "NUMPY" or file_type_token == "TXT" or file_type_token == "HDF5" or file_type_token == "SAN-HDF5" or file_type_token == "SAV"):
                     val = data[jj][d]
 
                 # Checking mode
@@ -698,5 +703,30 @@ def textufy_maxime_rey_molecularcloud_gas_xyzrho():
     skip_scanning = False
     only_scanning = True
 
+    particles_textufy(source_file, file_type_token, dest_path, dest_file_name, dimensions, kept_dimensions, minmaxs, testing_density, nb_logs, skip_scanning, only_scanning)# textufy_maxime_rey_molecularcloud_gas_xyzrho()
+
+# San Han galaxy cluster
+def textufy_san_han_galaxy_cluster_xyzdensitytemp():
+    dimensions = [ ["x", "linear", "HQ"], ["y", "linear", "HQ"], ["z", "linear", "HQ"], ["density", "log", "LQ"], ["temperature", "log", "LQ"] ]
+    
+    box_center_x = 0.5168804
+    box_center_y = 0.49409705
+    box_center_z = 0.50810833
+    box_radius = 0.003 / 2
+    zoombox = [ box_center_x, box_center_y, box_center_z, box_radius ] # x_center, y_center, z_center, radius
+    minmaxs = [ [box_center_x - box_radius, box_center_x + box_radius], [box_center_y - box_radius, box_center_y + box_radius], [box_center_z - box_radius, box_center_z + box_radius], [-7, 1], [-1, 10] ]
+    
+    kept_dimensions = [1, 1, 1, 1, 1]
+    file_prefix = "xyzdensitytemp"
+    
+    source_file = "./data/sanhangalaxycluster/1-frame/nc_cluster.h5"
+    file_type_token = "SAN-HDF5"
+    dest_path = "sanhangalaxycluster/1-frame/"
+    dest_file_name = "sanhangalaxycluster-xyzdensitytemp"
+    testing_density = 1/3 # 1/1 is full rendering
+    nb_logs = 15
+    skip_scanning = True
+    only_scanning = False
+
     particles_textufy(source_file, file_type_token, dest_path, dest_file_name, dimensions, kept_dimensions, minmaxs, testing_density, nb_logs, skip_scanning, only_scanning)
-textufy_maxime_rey_molecularcloud_gas_xyzrho()
+textufy_san_han_galaxy_cluster_xyzdensitytemp()
