@@ -483,9 +483,6 @@ def klodufy_txt (source_file, size, source_xyz_min, source_xyz_max, quality, des
             #print(str(klodu[j]) + " " + str(max_value) + " " + str(max_resolution))
             print(str(j + 1) + "th value is: " + str(hex_value) + " (" + str(100 * klodu[j] / max_resolution) + "% of max intensity)")
     
-    # Now... time to smooth values by looking at neighbours...
-    # Coming soon...
-    
     # Generate Unity footer
     write_unity_footer(destination_file)
     
@@ -495,14 +492,14 @@ def klodufy_txt (source_file, size, source_xyz_min, source_xyz_max, quality, des
 # Klodufy already cleaned Dwarfgal file
 def klodufy_txt_dwarfgal ():
     source_file = "./output/dwarfgal/1-frame/dwarfgal-xyzrho.txt"
-    size = 70
+    size = 300
     source_xyz_min = 0
     source_xyz_max = 1000000
-    quality = "low"
+    quality = "high"
     dest_path = "dwarfgal/1-frame/"
-    dest_file_name = "klo-dwarfgal-" + str(size)
+    dest_file_name = "klo-dwarfgal-rho-" + str(size)
     testing_density = 1/1
-    nb_logs = 12
+    nb_logs = 15
     
     klodufy_txt(source_file, size, source_xyz_min, source_xyz_max, quality, dest_path, dest_file_name, testing_density, nb_logs)
 # klodufy_txt_dwarfgal()
@@ -690,5 +687,4 @@ def klodufy_emmaaycoberry_box ():
     skip_scanning = False
     
     klodufy(source_file, file_type_token, size, dimensions, minmaxs, quality, dest_path, dest_file_name, testing_density, nb_logs, skip_scanning)
-
 # klodufy_emmaaycoberry_box ()
