@@ -15,9 +15,32 @@ import datetime
 import numpy as np
 import h5py
 from scipy.io import readsav
+from loguru import logger
+import sys # for loguru
 
-# file_type_token: "PHANTOM", "SHAMROCK", "NUMPY", "TXT" or "HDF5"
-def prepare_tracers_data (source_file, file_type_token):
+def configure_loguru():
+    logger.remove()
+    logger.level("TRACE", color="<cyan>")
+    logger.level("DEBUG", color="<blue>")
+    logger.level("INFO", color="<normal>")
+    logger.level("SUCCESS", color="<green>")  # Loguru default is usually bold green
+    logger.level("WARNING", color="<yellow>")
+    logger.level("ERROR", color="<red>")      # Loguru default is usually bold red
+    logger.level("CRITICAL", color="<red>")
+    logger.add(sys.stderr, format="<green>[Astrocook]</green> <blue>[{function}]</blue> <level>[{level}]</level>: {message}")
+    # logger.add(sys.stderr, level="WARNING")
+
+    # How to use:
+    # logger.trace()
+    # logger.debug()
+    # logger.info()
+    # logger.success()
+    # logger.warning()
+    # logger.error()
+    # logger.critical()
+
+# file_type_token: "PHANTOM", "SHAMROCK", "NUMPY", "TXT", "HDF5", "HDF5-SANHAN" or "HDF5-GOY"
+def prepare_tracers_data(source_file, file_type_token):
     
     if (file_type_token == "PHANTOM"):
         sdf, sdf_sinks = sarracen.read_phantom(source_file)
@@ -47,11 +70,11 @@ def prepare_tracers_data (source_file, file_type_token):
         
         return data
         
-    elif (file_type_token == "HDF5" or file_type_token == "SAN-HDF5"):
+    elif (file_type_token == "HDF5" or file_type_token == "HDF5-SANHAN"):
         
         with h5py.File(source_file, "r") as f:
             # List all keys
-            if (file_type_token == "SAN-HDF5"):
+            if (file_type_token == "HDF5-SANHAN"):
                 file = f["data"]
             elif (file_type_token == "HDF5"):
                 file = f
@@ -72,6 +95,35 @@ def prepare_tracers_data (source_file, file_type_token):
             
             print("Data shape is " + str(data.shape) + " with a total of " + str(data.size) + " elements.")
             
+            return data
+
+    elif (file_type_token == "HDF5-GOY"):
+        with h5py.File(source_file, "r") as hdf:
+            # Logging HDF5 structure
+            logger.info("Printing Valentin Goy HDF5 file structure...")
+            items = []
+            hdf.visit(items.append)
+            logger.info(f"Discovered HDF5 structure: {', '.join(items)}")
+
+            # Read Alex group's columns
+            x = hdf['Alex/x'][:]
+            rho = hdf['Alex/rho'][:]
+            rhod = hdf['Alex/rhod'][:]
+            vx = hdf['Alex/vx'][:]
+            vy = hdf['Alex/vy'][:]
+            vz = hdf['Alex/vz'][:]
+            vdx = hdf['Alex/vdx'][:]
+            vdy = hdf['Alex/vdy'][:]
+            vdz = hdf['Alex/vdz'][:]
+            Bx = hdf['Alex/Bx'][:]
+            By = hdf['Alex/By'][:]
+            Bz = hdf['Alex/Bz'][:]
+            
+            # Stack into numpy array
+            data = np.column_stack([x, rho, rhod, vx, vy, vz, vdx, vdy, vdz, Bx, By, Bz])
+
+            logger.info("Loaded Valentin Goy HDF5 data with shape: " + str(data.shape) + " and a total of " + str(data.size) + " elements.")
+
             return data
 
     elif (file_type_token == "SAV"):
@@ -108,7 +160,7 @@ def prepare_tracers_data (source_file, file_type_token):
 def round_to_n(x, n):
     return 0 if (x == 0) else round(x, -int(math.floor(round(math.log10(abs(x)) - n + 1))))
 
-def prepend_zeros (value, target_length):
+def prepend_zeros(value, target_length):
     result = value
     size = len(str(value))
     for i in range(0, target_length - size):
@@ -116,7 +168,7 @@ def prepend_zeros (value, target_length):
         
     return result
     
-def remap (input, source_min, source_max, target_min, target_max, clamp_mode):
+def remap(input, source_min, source_max, target_min, target_max, clamp_mode):
     if (clamp_mode & (input < source_min)):
         return target_min
     elif (clamp_mode & (input > source_max)):
@@ -124,12 +176,15 @@ def remap (input, source_min, source_max, target_min, target_max, clamp_mode):
     else:
         return target_min + (target_max - target_min) * (input - source_min) / (source_max - source_min)
 
-def is_within_box (x, y, z, x_center, y_center, z_center, radius):
+def is_within_box(x, y, z, x_center, y_center, z_center, radius):
     return (x >= x_center - radius) and (x <= x_center + radius) and (y >= y_center - radius) and (y <= y_center + radius) and (z >= z_center - radius) and (z <= z_center + radius)
 
 # Main function to textufy particles data dumps, with options to customize the process
 def particles_textufy (source_file, file_type_token, dest_path, dest_file_name, dimensions, kept_dimensions, minmaxs, testing_density, nb_logs, skip_scanning, only_scanning, zoombox=None):
 
+    # Configure loguru
+    configure_loguru()
+    
     # Testing mode inits
     testing_density = min(1, testing_density) # Make sure it don't go krazy (> 1)
     testing_value = round(1/testing_density)
@@ -189,7 +244,7 @@ def particles_textufy (source_file, file_type_token, dest_path, dest_file_name, 
                     val = data.iloc[ii][dimension_name]
                     
                 # Grab data value basic way (just the order)
-                elif (file_type_token == "NUMPY" or file_type_token == "TXT" or file_type_token == "HDF5" or file_type_token == "SAN-HDF5" or file_type_token == "SAV"):
+                elif (file_type_token == "NUMPY" or file_type_token == "TXT" or file_type_token == "HDF5" or file_type_token == "HDF5-SANHAN" or file_type_token == "SAV" or file_type_token == "HDF5-GOY"):
                     val = data[ii][d]
                     
                 # Checking mode
@@ -269,7 +324,7 @@ def particles_textufy (source_file, file_type_token, dest_path, dest_file_name, 
                     val = data.iloc[jj][dimension_name]
                     
                 # Grab data value basic way (just the order)
-                elif (file_type_token == "NUMPY" or file_type_token == "TXT" or file_type_token == "HDF5" or file_type_token == "SAN-HDF5" or file_type_token == "SAV"):
+                elif (file_type_token == "NUMPY" or file_type_token == "TXT" or file_type_token == "HDF5" or file_type_token == "HDF5-SANHAN" or file_type_token == "SAV" or file_type_token == "HDF5-GOY"):
                     val = data[jj][d]
 
                 # Checking mode
@@ -314,7 +369,7 @@ def particles_textufy (source_file, file_type_token, dest_path, dest_file_name, 
         print("File " + dest_file_name + ".txt was created")
     
 
-def particles_textufy_disktilt ():
+def particles_textufy_disktilt():
     dimensions = [ ["x", "linear", "HQ"], ["y", "linear", "HQ"], ["z", "linear", "HQ"], ["vx", "linear", "LQ"], ["vy", "linear", "LQ"], ["vz", "linear", "LQ"], ["rho", "log", "LQ"], ["soundspeed", "log", "LQ"] ]
     
     source_file = "./data/disktilt/disktilt_fulldump_0314.sham"
@@ -338,7 +393,7 @@ def particles_textufy_disktilt ():
 # particles_textufy_disktilt()
 
 # OBSOLETE
-def particles_textufy_disktilt_frame (frame, index):
+def particles_textufy_disktilt_frame(frame, index):
     print("Generatig frame " + str(frame) + " of index " + str(index))
     
     frame_index = prepend_zeros(frame, 4)
@@ -371,7 +426,7 @@ def particles_textufy_disktilt_full_99_anim():
     print("Generated 99 animation frames.")
 # particles_textufy_disktilt_full_99_anim()
 
-def textufy_dwarfgal_frame (frame, index):
+def textufy_dwarfgal_frame(frame, index):
     print("Generatig frame " + str(frame) + " of index " + str(index))
     
     # dimensions = [ ["x", "linear", "HQ"], ["y", "linear", "HQ"], ["z", "linear", "HQ"], ["rho", "log", "LQ"], ["vol", "log", "LQ"], ["bx", "linear", "LQ"], ["by", "linear", "LQ"], ["bz", "linear", "LQ"], ["vx", "linear", "LQ"], ["vy", "linear", "LQ"], ["vz", "linear", "LQ"] ]
@@ -405,7 +460,7 @@ def textufy_dwarfgal_full_100_anim():
     print("Generated 100 animation frames.")
 # textufy_dwarfgal_full_100_anim()
 
-def textufy_zoomin ():
+def textufy_zoomin():
     # x y z (kpc) vx vy vz (km/s) rho (H) level mass (H + He) temp, level : level of refinement (12 (7min)->20), 8 volume scale between two levels
     
     dimensions = [ ["x", "linear", "HQ"], ["y", "linear", "HQ"], ["z", "linear", "HQ"], ["vx", "linear", "LQ"], ["vy", "linear", "LQ"], ["vz", "linear", "LQ"], ["rho", "log", "LQ"], ["level", "linear", "LQ"], ["mass", "linear", "LQ"], ["temp", "linear", "LQ"] ]
@@ -425,7 +480,7 @@ def textufy_zoomin ():
     particles_textufy(source_file, file_type_token, dest_path, dest_file_name, dimensions, kept_dimensions, minmaxs, testing_density, nb_logs, skip_scanning, only_scanning)
 # textufy_zoomin()
 
-def textufy_binarydisk_frame (frame, index):
+def textufy_binarydisk_frame(frame, index):
     # Multiple of 10 index
     if (frame % 10 == 0):
         dimensions = [ ["x", "linear", "HQ"], ["y", "linear", "HQ"], ["z", "linear", "HQ"], ["vx", "linear", "LQ"], ["vy", "linear", "LQ"], ["vz", "linear", "LQ"], ["h", "log", "LQ"], ["divv", "linear", "LQ"], ["dt", "linear", "LQ"] ]
@@ -720,7 +775,7 @@ def textufy_san_han_galaxy_cluster_xyzdensitytemp():
     file_prefix = "xyzdensitytemp"
     
     source_file = "./data/sanhangalaxycluster/1-frame/nc_cluster.h5"
-    file_type_token = "SAN-HDF5"
+    file_type_token = "HDF5-SANHAN"
     dest_path = "sanhangalaxycluster/1-frame/"
     dest_file_name = "sanhangalaxycluster-xyzdensitytemp"
     testing_density = 1/3 # 1/1 is full rendering
@@ -794,3 +849,38 @@ def textufy_maxime_rey_newcloud_full_168_anim():
         
     print("Generated 168 animation frames.")
 # textufy_maxime_rey_newcloud_full_168_anim()
+
+def textufy_valentin_goy_test_clumping():
+    dimensions = [
+        ["x", "linear", "HQ"],
+        ["rho", "log", "HQ"],
+        ["rhod", "log", "HQ"],
+        ["vx", "linear", "LQ"],
+        ["vy", "linear", "LQ"],
+        ["vz", "linear", "LQ"],
+        ["vdx", "linear", "LQ"],
+        ["vdy", "linear", "LQ"],
+        ["vdz", "linear", "LQ"],
+        ["Bx", "linear", "LQ"],
+        ["By", "linear", "LQ"],
+        ["Bz", "linear", "LQ"]
+    ]
+    
+    minmaxs = [ [0, 5e16], [-21, -16.5], [-23, -17.5], [-6e5, 6e5], [-6e5, 6e5], [-6e5, 6e5], [-6e5, 6e5], [-6e5, 6e5], [-6e5, 6e5], [0, 3.4e-4], [-1e-4, 1e-4], [-1e-4, 1e-4] ]
+    
+    kept_dimensions = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+    file_prefix = "all"
+    
+    source_file = "./data/valentingoy/1-frame-test/1D_magnetic_clumping_test.hdf5"
+    file_type_token = "HDF5-GOY"
+    dest_path = "valentingoy/1-frame-test/"
+    dest_file_name = "valentingoy-all"
+    testing_density = 1/1 # 1/1 is full rendering
+    nb_logs = 20
+    skip_scanning = True
+    only_scanning = False
+
+    particles_textufy(source_file, file_type_token, dest_path, dest_file_name, dimensions, kept_dimensions, minmaxs, testing_density, nb_logs, skip_scanning, only_scanning)
+
+textufy_valentin_goy_test_clumping()
+
