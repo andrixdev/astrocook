@@ -22,12 +22,12 @@ def configure_loguru():
     logger.remove()
     logger.level("TRACE", color="<cyan>")
     logger.level("DEBUG", color="<blue>")
-    logger.level("INFO", color="<normal>")
+    logger.level("INFO", color="<fg #F08>")
     logger.level("SUCCESS", color="<green>")  # Loguru default is usually bold green
     logger.level("WARNING", color="<yellow>")
     logger.level("ERROR", color="<red>")      # Loguru default is usually bold red
     logger.level("CRITICAL", color="<red>")
-    logger.add(sys.stderr, format="<green>[Astrocook]</green> <blue>[{function}]</blue> <level>[{level}]</level>: {message}")
+    logger.add(sys.stderr, format="<fg #5F6>[Astrocook]</fg #5F6> <fg #2F9>[{function}]</fg #2F9> <level>[{level}]</level>: {message}")
     # logger.add(sys.stderr, level="WARNING")
 
     # How to use:
@@ -119,8 +119,15 @@ def prepare_tracers_data(source_file, file_type_token):
             By = hdf['Alex/By'][:]
             Bz = hdf['Alex/Bz'][:]
             
+            columns = [x, rho, rhod, vx, vy, vz, vdx, vdy, vdz, Bx, By, Bz]
+            
+            # Optionally create sd column if available
+            if 'Alex/sd' in hdf:
+                sd = hdf['Alex/sd'][:]
+                columns.append(sd)
+            
             # Stack into numpy array
-            data = np.column_stack([x, rho, rhod, vx, vy, vz, vdx, vdy, vdz, Bx, By, Bz])
+            data = np.column_stack(columns)
 
             logger.info("Loaded Valentin Goy HDF5 data with shape: " + str(data.shape) + " and a total of " + str(data.size) + " elements.")
 
@@ -194,7 +201,7 @@ def particles_textufy (source_file, file_type_token, dest_path, dest_file_name, 
     
     # Hi
     dest_file_name = dest_file_name + ("" if testing_value == 1 else ("-1-in-" + str(testing_value)))
-    print("Starting work on " + dest_file_name + "...")
+    logger.info("Starting work on " + dest_file_name + "...")
     
     # Prepare export file
     destination_file = open("output/" + dest_path + dest_file_name + ".txt", "w")
@@ -206,7 +213,7 @@ def particles_textufy (source_file, file_type_token, dest_path, dest_file_name, 
     actual_count = math.floor(count * testing_density)
     
     log_ratio = "all of " if testing_value == 1 else ("1 in " + str(testing_value) + " of all ")
-    print("Processing " + log_ratio + str(count) + " (== " + str(actual_count) + ") text rows to " + dest_file_name + ".txt...")
+    logger.info("Processing " + log_ratio + str(count) + " (== " + str(actual_count) + ") text rows to " + dest_file_name + ".txt...")
     
     step = math.floor(testing_value)
     
@@ -215,7 +222,7 @@ def particles_textufy (source_file, file_type_token, dest_path, dest_file_name, 
     
     # LOOP 1: scan
     if (not skip_scanning):
-        
+        logger.info("Scanning data to detect extrema for remapping...")
         # Init scanned minmax array (extremal values of positions, velocities... whatever)
         real_minmaxs = []
         for d in range(0, dims):
@@ -279,12 +286,13 @@ def particles_textufy (source_file, file_type_token, dest_path, dest_file_name, 
         # Log scanning time
         mid_time = datetime.datetime.now()
         delta = mid_time.timestamp() - start_time.timestamp()
-        print("Scanned data in: " + str(round(delta, 2)) + " seconds.")
+        logger.success("Scanned data in: " + str(round(delta, 2)) + " seconds.")
     
     # LOOP 2: remap & write
     is_first_line_written = True
     is_in_box = True # Init to true to avoid issues when zoombox is not set
     if (not only_scanning):
+        logger.info("Remapping data and writing to file...")
         for j in range(0, actual_count):
             jj = j * step
             
@@ -363,10 +371,10 @@ def particles_textufy (source_file, file_type_token, dest_path, dest_file_name, 
         # Log normalizing time
         end_time = datetime.datetime.now()
         delta = end_time.timestamp() - (mid_time.timestamp() if (not skip_scanning) else start_time.timestamp())
-        print("Normalized data in: " + str(round(delta, 2)) + " seconds.")
+        logger.success("Normalized data in: " + str(round(delta, 2)) + " seconds.")
         
         # Conclude
-        print("File " + dest_file_name + ".txt was created")
+        logger.success("File " + dest_file_name + ".txt was created.")
     
 
 def particles_textufy_disktilt():
@@ -877,10 +885,65 @@ def textufy_valentin_goy_test_clumping():
     dest_file_name = "valentingoy-all"
     testing_density = 1/1 # 1/1 is full rendering
     nb_logs = 20
-    skip_scanning = True
+    skip_scanning = False
     only_scanning = False
 
     particles_textufy(source_file, file_type_token, dest_path, dest_file_name, dimensions, kept_dimensions, minmaxs, testing_density, nb_logs, skip_scanning, only_scanning)
-
 textufy_valentin_goy_test_clumping()
 
+def textufy_maxime_lombart_test_collapse():
+    dimensions = [
+        ["x", "linear", "HQ"],
+        ["y", "linear", "HQ"],
+        ["z", "linear", "HQ"],
+        ["rho", "log", "LQ"],
+        ["size", "log", "LQ"],
+    ]
+    minmaxs = [ [-5000, 5000], [-5000, 5000], [-5000, 5000], [-20, -11], [-6, -1.5] ]
+    kept_dimensions = [ 1, 1, 1, 1, 1 ]
+    file_prefix = "rhosize"
+    source_file = "./data/maximelombart/1-frame-test/collapse_data_ramses_test.npy"
+    file_type_token = "NUMPY"
+    dest_path = "maximelombart/1-frame-test/"
+    dest_file_name = "maximelombart-rhosize"
+    testing_density = 1/1
+    nb_logs = 15
+    skip_scanning = True
+    only_scanning = False
+    
+    particles_textufy(source_file, file_type_token, dest_path, dest_file_name, dimensions, kept_dimensions, minmaxs, testing_density, nb_logs, skip_scanning, only_scanning)
+# textufy_maxime_lombart_test_collapse()
+
+def textufy_valentin_goy_hd_test_clumping():
+    dimensions = [
+        ["x", "linear", "HQ"],
+        ["rho", "log", "LQ"],
+        ["rhod", "log", "LQ"],
+        ["vx", "linear", "HQ"],
+        ["vy", "linear", "HQ"],
+        ["vz", "linear", "HQ"],
+        ["vdx", "linear", "HQ"],
+        ["vdy", "linear", "HQ"],
+        ["vdz", "linear", "HQ"],
+        ["Bx", "linear", "HQ"],
+        ["By", "linear", "HQ"],
+        ["Bz", "linear", "HQ"],
+        ["sd", "log", "LQ"]
+    ]
+    
+    minmaxs = [ [0, 5e16], [-24, -15], [-24, -15], [-6e5, 6e5], [-6e5, 6e5], [-6e5, 6e5], [-6e5, 6e5], [-6e5, 6e5], [-6e5, 6e5], [0, 3.4e-4], [-1e-4, 1e-4], [-1e-4, 1e-4], [-3, 0] ]
+    
+    kept_dimensions = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+    file_prefix = "allsd"
+    
+    source_file = "./data/valentingoy/1-frame-hd-test/1D_4096_test.hdf5"
+    file_type_token = "HDF5-GOY"
+    dest_path = "valentingoy/1-frame-hd-test/"
+    dest_file_name = "valentingoy-allsd"
+    testing_density = 1/1 # 1/1 is full rendering
+    nb_logs = 20
+    skip_scanning = False
+    only_scanning = False
+
+    particles_textufy(source_file, file_type_token, dest_path, dest_file_name, dimensions, kept_dimensions, minmaxs, testing_density, nb_logs, skip_scanning, only_scanning)
+# textufy_valentin_goy_hd_test_clumping()
