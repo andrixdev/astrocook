@@ -22,9 +22,9 @@ def configure_loguru():
     logger.remove()
     logger.level("TRACE", color="<cyan>")
     logger.level("DEBUG", color="<blue>")
-    logger.level("INFO", color="<fg #F08>")
+    logger.level("INFO", color="<yellow>")
     logger.level("SUCCESS", color="<green>")  # Loguru default is usually bold green
-    logger.level("WARNING", color="<yellow>")
+    logger.level("WARNING", color="<fg #F08>")
     logger.level("ERROR", color="<red>")      # Loguru default is usually bold red
     logger.level("CRITICAL", color="<red>")
     logger.add(sys.stderr, format="<fg #5F6>[Astrocook]</fg #5F6> <fg #2F9>[{function}]</fg #2F9> <level>[{level}]</level>: {message}")
@@ -59,14 +59,14 @@ def prepare_tracers_data(source_file, file_type_token):
     elif (file_type_token == "NUMPY"):
         data = np.load(source_file)
         
-        print("Data shape is " + str(data.shape) + " with a total of " + str(data.size) + " elements.")
+        logger.info("Data shape is " + str(data.shape) + " with a total of " + str(data.size) + " elements.")
         
         return data
         
     elif (file_type_token == "TXT"):
         data = arr = np.loadtxt(source_file)
         
-        print("Data shape is " + str(data.shape) + " with a total of " + str(data.size) + " elements.")
+        logger.info("Data shape is " + str(data.shape) + " with a total of " + str(data.size) + " elements.")
         
         return data
         
@@ -87,13 +87,13 @@ def prepare_tracers_data(source_file, file_type_token):
                     keys.remove(dim)
                     keys.insert(0, dim)
 
-            print("Keys: %s" % keys)
+            logger.info("HDF5 keys: %s" % keys)
             
             # Load all datasets and stack them
             datasets = [np.array(file[key]) for key in keys]
             data = np.column_stack(datasets) if len(datasets) > 1 else np.array(datasets[0])
             
-            print("Data shape is " + str(data.shape) + " with a total of " + str(data.size) + " elements.")
+            logger.info("Data shape is " + str(data.shape) + " with a total of " + str(data.size) + " elements.")
             
             return data
 
@@ -149,7 +149,7 @@ def prepare_tracers_data(source_file, file_type_token):
 
         data = np.column_stack([x, y, z, vx, vy, vz, rho, pressure, metallicity])
 
-        print("Data shape is " + str(data.shape) + " with a total of " + str(data.size) + " elements.")
+        logger.info("Data shape is " + str(data.shape) + " with a total of " + str(data.size) + " elements.")
             
         return data
 
@@ -160,7 +160,7 @@ def prepare_tracers_data(source_file, file_type_token):
         # d = var[0]; p = var[4]
 
     else:
-        print("[prepare_tracers_data(...)] Unknown file type token: " + file_type_token)
+        logger.error("[prepare_tracers_data(...)] Unknown file type token: " + file_type_token)
         
         return False
 
@@ -174,7 +174,7 @@ def prepend_zeros(value, target_length):
         result = "0" + str(result)
         
     return result
-    
+
 def remap(input, source_min, source_max, target_min, target_max, clamp_mode):
     if (clamp_mode & (input < source_min)):
         return target_min
@@ -223,6 +223,7 @@ def particles_textufy (source_file, file_type_token, dest_path, dest_file_name, 
     # LOOP 1: scan
     if (not skip_scanning):
         logger.info("Scanning data to detect extrema for remapping...")
+        
         # Init scanned minmax array (extremal values of positions, velocities... whatever)
         real_minmaxs = []
         for d in range(0, dims):
@@ -291,8 +292,13 @@ def particles_textufy (source_file, file_type_token, dest_path, dest_file_name, 
     # LOOP 2: remap & write
     is_first_line_written = True
     is_in_box = True # Init to true to avoid issues when zoombox is not set
+    output_rows_count = 0
     if (not only_scanning):
         logger.info("Remapping data and writing to file...")
+
+        if (zoombox):
+            logger.warning("Filtering with zoombox: " + str(zoombox) + " (x, y, z, rad)")
+
         for j in range(0, actual_count):
             jj = j * step
             
@@ -327,7 +333,6 @@ def particles_textufy (source_file, file_type_token, dest_path, dest_file_name, 
                     else:
                         val = data.iloc[jj][dimension_name]                   
 
-
                 elif (file_type_token == "PHANTOM"):
                     val = data.iloc[jj][dimension_name]
                     
@@ -351,30 +356,29 @@ def particles_textufy (source_file, file_type_token, dest_path, dest_file_name, 
                     if (d > 0):
                         row = row + " "
                     
-                    if (zoombox):
-                        if (is_in_box):
-                            row = row + str(val)
-                    else:
+                    if (not zoombox or (zoombox and is_in_box)):
                         row = row + str(val)
-                
+                        
+            # Log row sometimes
             if (j % max(1, int(round(actual_count/nb_logs))) == 0):
-                print(str(j) + "th remapped row is: " + row.lstrip('\n'))
+                if (zoombox and not is_in_box):
+                    print(str(j) + "th remapped row is: out of zoombox")
+                else:
+                    print(str(j) + "th remapped row is: " + row.lstrip('\n'))
 
             # Write to file
-            if (zoombox and is_in_box):
+            if (not zoombox or (zoombox and is_in_box)):
                 destination_file.write(row)
-                is_first_line_written = False
-            elif (not zoombox):
-                destination_file.write(row)
+                output_rows_count += 1
                 is_first_line_written = False
 
         # Log normalizing time
         end_time = datetime.datetime.now()
         delta = end_time.timestamp() - (mid_time.timestamp() if (not skip_scanning) else start_time.timestamp())
-        logger.success("Normalized data in: " + str(round(delta, 2)) + " seconds.")
+        logger.success("Ramapped and wrote data in: " + str(round(delta, 2)) + " seconds.")
         
         # Conclude
-        logger.success("File " + dest_file_name + ".txt was created.")
+        logger.success("File " + dest_file_name + ".txt with " + str(output_rows_count) + " rows was created.")
     
 
 def particles_textufy_disktilt():
@@ -402,7 +406,7 @@ def particles_textufy_disktilt():
 
 # OBSOLETE
 def particles_textufy_disktilt_frame(frame, index):
-    print("Generatig frame " + str(frame) + " of index " + str(index))
+    logger.info("Generating frame " + str(frame) + " of index " + str(index))
     
     frame_index = prepend_zeros(frame, 4)
     source_file = "./data/disktilt/99-frames/dump_" + frame_index + ".sham"
@@ -426,17 +430,17 @@ def particles_textufy_disktilt_frame(frame, index):
 
     particles_textufy(source_file, file_type_token, dest_path, dest_file_name, pos_only, rho_logarithmic_mode, soundspeed_logarithmic_mode, min_pos, max_pos, min_vel, max_vel, min_rho, max_rho, min_soundspeed, max_soundspeed, testing_density, nb_logs, skip_scanning)
 def particles_textufy_disktilt_full_99_anim():
-    print("Generating 99 particles animation frames with positions...")
+    logger.info("Generating 99 particles animation frames with positions...")
     
     for f in range(0, 98 + 1):
         particles_textufy_disktilt_frame(f, f)
         
-    print("Generated 99 animation frames.")
+    logger.success("Generated 99 animation frames.")
 # particles_textufy_disktilt_full_99_anim()
 
 def textufy_dwarfgal_frame(frame, index):
-    print("Generatig frame " + str(frame) + " of index " + str(index))
-    
+    logger.info("Generating frame " + str(frame) + " of index " + str(index))
+
     # dimensions = [ ["x", "linear", "HQ"], ["y", "linear", "HQ"], ["z", "linear", "HQ"], ["rho", "log", "LQ"], ["vol", "log", "LQ"], ["bx", "linear", "LQ"], ["by", "linear", "LQ"], ["bz", "linear", "LQ"], ["vx", "linear", "LQ"], ["vy", "linear", "LQ"], ["vz", "linear", "LQ"] ]
     # source_file = "./data/dwarfgal/1-frame/data_for_alex_xyzrhovolbxbybzvxvyvz.npy"
     # dest_file_name = "dwarfgal-xyzrhovolbxbybzvxvyvz"
@@ -458,14 +462,14 @@ def textufy_dwarfgal_frame(frame, index):
 
     particles_textufy(source_file, file_type_token, dest_path, dest_file_name, dimensions, kept_dimensions, minmaxs, testing_density, nb_logs, skip_scanning, only_scanning)
 def textufy_dwarfgal_full_100_anim():
-    print("Generating 100 animation frames with positions and rho...")
+    logger.info("Generating 100 animation frames with positions and rho...")
     
     i = 0
     for f in range(1250, 1349 + 1):
         i = i + 1
         textufy_dwarfgal_frame(f, i)
         
-    print("Generated 100 animation frames.")
+    logger.success("Generated 100 animation frames.")
 # textufy_dwarfgal_full_100_anim()
 
 def textufy_zoomin():
@@ -516,14 +520,15 @@ def textufy_binarydisk_full_102_anim():
     start_index = 10#0
     end_index = 101
     diff = end_index - start_index
-    print("Generating " + str(diff) + " animation frames with density data...")
+
+    logger.info("Generating " + str(diff) + " animation frames with density data...")
     
     i = start_index
     for f in range(start_index, end_index + 1):
         textufy_binarydisk_frame(f, i + 1)
         i = i + 1
         
-    print("Generated " + str(diff + 1) + " animation frames.")
+    logger.success("Generated " + str(diff + 1) + " animation frames.")
 # textufy_binarydisk_full_102_anim()
 
 def textufy_fracturings_frame_xyz():
@@ -614,7 +619,7 @@ def textufy_fred_thompson_starcluster_gas_xyzrho():
     source_file = "./data/fredthompson/1-frame/H10cluster_8pc_output176_gas.h5"
     file_type_token = "HDF5"
     dest_path = "fredthompson/1-frame/"
-    dest_file_name = "fredthompson-gas-xyzrho"
+    dest_file_name = "fredthompson-gas-" + file_prefix
     testing_density = 1/1 # 1/1 is full rendering
     nb_logs = 15
     skip_scanning = True
@@ -631,7 +636,7 @@ def textufy_fred_thompson_starcluster_stars_xyzmass():
     source_file = "./data/fredthompson/1-frame/H10cluster_8pc_output176_stars.h5"
     file_type_token = "HDF5"
     dest_path = "fredthompson/1-frame/"
-    dest_file_name = "fredthompson-stars-xyzmass"
+    dest_file_name = "fredthompson-stars-" + file_prefix
     testing_density = 1/1 # 1/1 is full rendering
     nb_logs = 15
     skip_scanning = False
@@ -648,7 +653,7 @@ def textufy_fred_thompson_starcluster_clusters_xyzmass():
     source_file = "./data/fredthompson/1-frame/H10cluster_8pc_output176_clusters.h5"
     file_type_token = "HDF5"
     dest_path = "fredthompson/1-frame/"
-    dest_file_name = "fredthompson-clusters-xyzmass"
+    dest_file_name = "fredthompson-clusters-" + file_prefix
     testing_density = 1/1 # 1/1 is full rendering
     nb_logs = 15
     skip_scanning = False
@@ -672,7 +677,7 @@ def textufy_cheonsukang_bigbox_xyzrho():
     source_file = "./data/cheonsukang/1-frame/cell_00373.sav"
     file_type_token = "SAV"
     dest_path = "cheonsukang/1-frame/"
-    dest_file_name = "cheonsukang-bigbox-zoomed-xyzrho"
+    dest_file_name = "cheonsukang-bigbox-zoomed-" + file_prefix
     testing_density = 1/40 # 1/1 is full rendering
     nb_logs = 15
     skip_scanning = False
@@ -694,7 +699,7 @@ def textufy_cheonsukang_bigbox_xyzvxvyvzrhopmetal():
     source_file = "./data/cheonsukang/1-frame/cell_00373.sav"
     file_type_token = "SAV"
     dest_path = "cheonsukang/1-frame/"
-    dest_file_name = "cheonsukang-bigbox-zoomed-xyzvxvyvzrhopmetal"
+    dest_file_name = "cheonsukang-bigbox-zoomed-" + file_prefix
     testing_density = 1/4 # 1/1 is full rendering
     nb_logs = 15
     skip_scanning = True
@@ -718,7 +723,7 @@ def textufy_james_sunseri_gas_xyzrho():
     source_file = "./data/jamessunseri/1-frame/MDG_gas.h5"
     file_type_token = "HDF5"
     dest_path = "jamessunseri/1-frame/"
-    dest_file_name = "jamessunseri-gas-zoomed-xyzrho"
+    dest_file_name = "jamessunseri-gas-zoomed-" + file_prefix
     testing_density = 1/13 # 1/1 is full rendering
     nb_logs = 15
     skip_scanning = True
@@ -740,7 +745,7 @@ def textufy_james_sunseri_stars_xyzmass():
     source_file = "./data/jamessunseri/1-frame/MDG_stars.h5"
     file_type_token = "HDF5"
     dest_path = "jamessunseri/1-frame/"
-    dest_file_name = "jamessunseri-stars-zoomed-xyzmass"
+    dest_file_name = "jamessunseri-stars-zoomed-" + file_prefix
     testing_density = 1/4 # 1/1 is full rendering
     nb_logs = 15
     skip_scanning = True
@@ -760,7 +765,7 @@ def textufy_maxime_rey_molecularcloud_gas_xyzrho():
     source_file = "./data/maximereycloud/1-frame/stars.h5"
     file_type_token = "HDF5"
     dest_path = "maximereycloud/1-frame/"
-    dest_file_name = "maximereycloud-gas-xyzmass"
+    dest_file_name = "maximereycloud-gas-" + file_prefix
     testing_density = 1/1 # 1/1 is full rendering
     nb_logs = 15
     skip_scanning = False
@@ -785,7 +790,7 @@ def textufy_san_han_galaxy_cluster_xyzdensitytemp():
     source_file = "./data/sanhangalaxycluster/1-frame/nc_cluster.h5"
     file_type_token = "HDF5-SANHAN"
     dest_path = "sanhangalaxycluster/1-frame/"
-    dest_file_name = "sanhangalaxycluster-xyzdensitytemp"
+    dest_file_name = "sanhangalaxycluster-" + file_prefix
     testing_density = 1/3 # 1/1 is full rendering
     nb_logs = 15
     skip_scanning = True
@@ -812,7 +817,7 @@ def textufy_maxime_rey_newcloud_xyzrho():
     source_file = "./data/maximereynewcloud/1-frame/gas.h5"
     file_type_token = "HDF5"
     dest_path = "maximereynewcloud/1-frame/"
-    dest_file_name = "maximereynewcloud-xyzrho"
+    dest_file_name = "maximereynewcloud-" + file_prefix
     testing_density = 1/1 # 1/1 is full rendering
     nb_logs = 15
     skip_scanning = True
@@ -840,7 +845,7 @@ def textufy_maxime_rey_newcloud_xyzrho_frame(frame, index):
     source_file = "./data/maximereynewcloud/168-frames/output_" + frame_index + "/gas.h5"
     file_type_token = "HDF5"
     dest_path = "maximereynewcloud/168-frames/"
-    dest_file_name = "maximereynewcloud-xyzrho-" + prepend_zeros(str(index), 3)
+    dest_file_name = "maximereynewcloud-" + file_prefix + "-" + prepend_zeros(str(index), 3)
     testing_density = 1/10 # 1/1 is full rendering
     nb_logs = 2
     skip_scanning = True
@@ -850,12 +855,12 @@ def textufy_maxime_rey_newcloud_xyzrho_frame(frame, index):
 # textufy_maxime_rey_newcloud_xyzrho_frame(17, 1)
 
 def textufy_maxime_rey_newcloud_full_168_anim():
-    print("Generating 168 animation frames with positions and rho...")
+    logger.info("Generating 168 animation frames with positions and rho...")
     
     for i in range(0, 167 + 1):
         textufy_maxime_rey_newcloud_xyzrho_frame(i + 17, i + 1)
         
-    print("Generated 168 animation frames.")
+    logger.success("Generated 168 animation frames.")
 # textufy_maxime_rey_newcloud_full_168_anim()
 
 def textufy_valentin_goy_test_clumping():
@@ -882,14 +887,14 @@ def textufy_valentin_goy_test_clumping():
     source_file = "./data/valentingoy/1-frame-test/1D_magnetic_clumping_test.hdf5"
     file_type_token = "HDF5-GOY"
     dest_path = "valentingoy/1-frame-test/"
-    dest_file_name = "valentingoy-all"
+    dest_file_name = "valentingoy-" + file_prefix
     testing_density = 1/1 # 1/1 is full rendering
     nb_logs = 20
     skip_scanning = False
     only_scanning = False
 
     particles_textufy(source_file, file_type_token, dest_path, dest_file_name, dimensions, kept_dimensions, minmaxs, testing_density, nb_logs, skip_scanning, only_scanning)
-textufy_valentin_goy_test_clumping()
+# textufy_valentin_goy_test_clumping()
 
 def textufy_maxime_lombart_test_collapse():
     dimensions = [
@@ -905,7 +910,7 @@ def textufy_maxime_lombart_test_collapse():
     source_file = "./data/maximelombart/1-frame-test/collapse_data_ramses_test.npy"
     file_type_token = "NUMPY"
     dest_path = "maximelombart/1-frame-test/"
-    dest_file_name = "maximelombart-rhosize"
+    dest_file_name = "maximelombart-" + file_prefix
     testing_density = 1/1
     nb_logs = 15
     skip_scanning = True
@@ -913,6 +918,37 @@ def textufy_maxime_lombart_test_collapse():
     
     particles_textufy(source_file, file_type_token, dest_path, dest_file_name, dimensions, kept_dimensions, minmaxs, testing_density, nb_logs, skip_scanning, only_scanning)
 # textufy_maxime_lombart_test_collapse()
+
+def textufy_maxime_lombart_zoomed_test_collapse():
+    dimensions = [
+        ["x", "linear", "HQ"],
+        ["y", "linear", "HQ"],
+        ["z", "linear", "HQ"],
+        ["rho", "log", "LQ"],
+        ["size", "log", "LQ"],
+    ]
+    minmaxs = [ [-5000, 5000], [-5000, 5000], [-5000, 5000], [-20, -11], [-6, -1.5] ]
+
+    box_center_x = 0
+    box_center_y = 0
+    box_center_z = 0
+    box_virial_radius = 250
+    zoombox = [ box_center_x, box_center_y, box_center_z, box_virial_radius ] # x_center, y_center, z_center, radius
+    minmaxs = [ [box_center_x - box_virial_radius, box_center_x + box_virial_radius], [box_center_y - box_virial_radius, box_center_y + box_virial_radius], [box_center_z - box_virial_radius, box_center_z + box_virial_radius], [-20, -11], [-6, -1.5] ]
+
+    kept_dimensions = [ 1, 1, 1, 1, 1 ]
+    file_prefix = "rhosize"
+    source_file = "./data/maximelombart/1-frame-test/collapse_data_ramses_test.npy"
+    file_type_token = "NUMPY"
+    dest_path = "maximelombart/1-frame-test/"
+    dest_file_name = "maximelombart-" + file_prefix + "-zoomed-" + str(box_virial_radius)
+    testing_density = 1/1
+    nb_logs = 15
+    skip_scanning = False
+    only_scanning = False
+    
+    particles_textufy(source_file, file_type_token, dest_path, dest_file_name, dimensions, kept_dimensions, minmaxs, testing_density, nb_logs, skip_scanning, only_scanning, zoombox)
+textufy_maxime_lombart_zoomed_test_collapse()
 
 def textufy_valentin_goy_hd_test_clumping():
     dimensions = [
@@ -939,7 +975,7 @@ def textufy_valentin_goy_hd_test_clumping():
     source_file = "./data/valentingoy/1-frame-hd-test/1D_4096_test.hdf5"
     file_type_token = "HDF5-GOY"
     dest_path = "valentingoy/1-frame-hd-test/"
-    dest_file_name = "valentingoy-allsd"
+    dest_file_name = "valentingoy-" + file_prefix
     testing_density = 1/1 # 1/1 is full rendering
     nb_logs = 20
     skip_scanning = False
