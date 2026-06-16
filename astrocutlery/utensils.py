@@ -24,7 +24,6 @@ def remap(input, source_min, source_max, target_min, target_max, clamp_mode):
 def is_within_box(x, y, z, x_center, y_center, z_center, radius):
 	return (x >= x_center - radius) and (x <= x_center + radius) and (y >= y_center - radius) and (y <= y_center + radius) and (z >= z_center - radius) and (z <= z_center + radius)
 
-
 def configure_loguru():
 	logger.remove()
 	logger.level("TRACE", color="<cyan>")

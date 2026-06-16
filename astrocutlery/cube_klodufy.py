@@ -7,12 +7,12 @@
 # Later used for other data sources, mostly the RAMSES User Meeting 2026 in Seoul at Yonsei University
 
 import math
-import random
+import datetime
+from loguru import logger
 import os # for Fortran .dat
 import numpy as np # for .npy & Fortran .dat
 from scipy.io import FortranFile # for Fortran .dat
-import datetime
-from astrocutlery.utensils import round_to_n, prepend_zeros, remap
+from astrocutlery.utensils import round_to_n, remap
 
 error_start = "\033[91m"
 error_end = "\033[0m"
@@ -469,81 +469,3 @@ def klodufy_txt (source_file, size, source_xyz_min, source_xyz_max, quality, des
     write_unity_footer(destination_file)
     
     print("Done!")
-
-# FRED THOMPSON STAR CLUSTER (has xyz so extracted in particles_textufy)
-def klodufy_fredthompson_starcluster ():
-
-    dimensions = [ ["rho", "log"], ["x", "linear"], ["y", "linear"], ["z", "linear"] ]
-    minmaxs = [ [-50, 50], [-50, 50], [-50, 50], [-50, 50] ]
-    file_prefix = "density"
-
-    source_file = "./data/fredthompson/H10cluster_8pc_output176_gas.h5"
-    # source_file = "./data/fredthompson/H10cluster_8pc_output176_stars.h5"
-    # source_file = "./data/fredthompson/H10cluster_8pc_output176_gas.h5"
-    file_type_token = "HDF5"
-    size = 256
-    quality = "high"
-    dest_path = "fredthompson/"
-    dest_file_name = "fredthompson-starcluster-rho-" + str(size)
-    testing_density = 1/10 # 1/1 is full rendering
-    nb_logs = 20
-    skip_scanning = False
-    
-    klodufy (source_file, file_type_token, size, dimensions, minmaxs, quality, dest_path, dest_file_name, testing_density, nb_logs, skip_scanning)
-# klodufy_fredthompson_starcluster()
-
-# YOHANDUBOIS GALAXY
-def klodufy_yohandubois_galaxy_rho ():
-    dimensions = [ ["rho", "log"] ]
-    minmaxs = [ [-7, -3] ]
-    file_prefix = "density"
-
-    source_file = "./data/yohandubois/1-frame/cube_gasdensity_output_00070.dat"
-    file_type_token = "DAT"
-    size = 128
-    quality = "high"
-    dest_path = "yohandubois/1-frame/"
-    dest_file_name = "yohandubois-galaxy-rho-" + str(size)
-    testing_density = 1/1 # 1/1 is full rendering
-    nb_logs = 20
-    skip_scanning = False
-    
-    klodufy (source_file, file_type_token, size, dimensions, minmaxs, quality, dest_path, dest_file_name, testing_density, nb_logs, skip_scanning)
-# klodufy_yohandubois_galaxy_rho ()
-def klodufy_yohandubois_galaxy_bz ():
-    dimensions = [ ["bz", "linear"] ]
-    minmaxs = [ [-0.00001, 0.00001] ]
-    file_prefix = "bz"
-
-    source_file = "./data/yohandubois/1-frame/cube_bz_output_00070.dat"
-    file_type_token = "DAT"
-    size = 256
-    quality = "high"
-    dest_path = "yohandubois/1-frame/"
-    dest_file_name = "yohandubois-galaxy-bz-" + str(size)
-    testing_density = 1/1 # 1/1 is full rendering
-    nb_logs = 20
-    skip_scanning = False
-    
-    klodufy(source_file, file_type_token, size, dimensions, minmaxs, quality, dest_path, dest_file_name, testing_density, nb_logs, skip_scanning)
-# klodufy_yohandubois_galaxy_bz()
-
-# EMMAAYCOBERRY BOX
-def klodufy_emmaaycoberry_box ():
-
-    dimensions = [ ["rho", "log"] ]
-    minmaxs = [ [-11, 1] ]
-    file_prefix = "density"
-
-    source_file = "./data/emmaaycoberry/1-frame/pressure_map.dat"
-    file_type_token = "DAT"
-    size = 512
-    quality = "high"
-    dest_path = "emmaaycoberry/1-frame/"
-    dest_file_name = "emmaaycoberry-box-rho-" + str(size)
-    testing_density = 1/2 # 1/1 is full rendering
-    nb_logs = 20
-    skip_scanning = False
-    
-    klodufy(source_file, file_type_token, size, dimensions, minmaxs, quality, dest_path, dest_file_name, testing_density, nb_logs, skip_scanning)
-# klodufy_emmaaycoberry_box ()
