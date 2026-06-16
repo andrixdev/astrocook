@@ -12,17 +12,10 @@ import os # for Fortran .dat
 import numpy as np # for .npy & Fortran .dat
 from scipy.io import FortranFile # for Fortran .dat
 import datetime
+from astrocutlery.utensils import round_to_n, prepend_zeros, remap
 
 error_start = "\033[91m"
 error_end = "\033[0m"
-
-def remap (input, source_min, source_max, target_min, target_max, clamp_mode):
-    if (clamp_mode & (input < source_min)):
-        return target_min
-    elif (clamp_mode & (input > source_max)):
-        return target_max
-    else:
-        return target_min + (target_max - target_min) * (input - source_min) / (source_max - source_min)
 
 def write_unity_header (destination_file, file_name, base_size, testing_density, dimensionality, quality):
     
@@ -150,17 +143,6 @@ def parse_int_to_formatted_hex (value, quality):
             print(error_start + "[parse_int_to_formatted_hex] Sir we have a serious problem here, one hex value is either to short or too long! (low quality encoding)" + error_end)
     
     return hex_value
-
-def round_to_n(x, n):
-    return 0 if (x == 0) else round(x, -int(math.floor(round(math.log10(abs(x)) - n + 1))))
-
-def prepend_zeros (value, target_length):
-    result = value
-    size = len(str(value))
-    for i in range(0, target_length - size):
-        result = "0" + str(result)
-        
-    return result
 
 def prepare_data_cube (source_file, file_type_token, dimensionality):
     
