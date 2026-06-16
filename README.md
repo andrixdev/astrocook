@@ -16,6 +16,11 @@ Python scripts to generate 2D and 3D textures for Unity out of various astrophys
 - Adapt the script by commenting or uncommenting revelant code sections.  
 - Edit file according to your needs.   
 
+## Branches
+
+- As of June 2026, a major refactoring has started, all datasets cooked before that date are not compatible with the latest code structure (ASTROVIZ project). Objects from RAMSES User Meeting 2026 are ported to the new version.    
+- The code needed to generate ancient datasets remains available in the *astrocook-debuts* branch.  
+
 ## Note for SHAMROCK users
 
 - /!\ Warning: install sarracen DEVELOPMENT build  

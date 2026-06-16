@@ -39,7 +39,7 @@ def textufy_valentin_goy_test_clumping():
 	only_scanning = False
 
 	particles_textufy(source_file, file_type_token, dest_path, dest_file_name, dimensions, kept_dimensions, minmaxs, testing_density, nb_logs, skip_scanning, only_scanning)
-textufy_valentin_goy_test_clumping()
+# textufy_valentin_goy_test_clumping()
 
 def textufy_valentin_goy_hd_test_clumping():
 	dimensions = [
