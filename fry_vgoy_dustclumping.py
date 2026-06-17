@@ -5,8 +5,10 @@
 # This file calls particles_textufy() with various parameters to parse different particle data dumps and generate text files with the desired particle data for Unity
 
 from loguru import logger
+import numpy as np
 from astrocutlery import particles_textufy
-from astrocutlery.utensils import prepend_zeros
+from astrocutlery.utensils import configure_loguru, prepend_zeros
+from astrocutlery.particles_textufy import compute_loop_variables, enrich_output_file_name, particles_scan, particles_export
 
 def textufy_valentin_goy_test_clumping(is_test=False):
 	dimensions = [
@@ -73,6 +75,18 @@ def textufy_valentin_goy_hd_test_clumping(is_test=False):
 
 	particles_textufy(source_file, file_type_token, dest_path, dest_file_name, dimensions, kept_dimensions, minmaxs, testing_density, nb_logs, is_scanning, is_exporting)
 
+def scan_time_array(time):
+	print(time)
+
+	log = ""
+	for i in range(0, len(time) - 2):
+		dif1 = time[i+1] - time[i]
+		dif2 = time[i+2] - time[i+1]
+		log += str(round(100 * (dif2 - dif1) / dif1)) + "%"
+		log += ", "
+	
+	print(log)
+
 def textufy_valentin_goy_103_anim_test():
 	import h5py
 
@@ -90,7 +104,7 @@ def textufy_valentin_goy_103_anim_test():
 		vdx = hdf['Alex/vdx'][:,:] #2D array
 		vdz = hdf['Alex/vdz'][:,:] #2D array
 		vdy = hdf['Alex/vdy'][:,:] #2D array
-		Bx = hdf['Alex/By'][:,:] #2D array
+		Bx = hdf['Alex/Bx'][:,:] #2D array
 		By = hdf['Alex/By'][:,:] #2D array
 		Bz = hdf['Alex/Bz'][:,:] #2D array
 		sd = hdf['Alex/sd'][:,:] #2D array
@@ -107,20 +121,56 @@ def textufy_valentin_goy_103_anim_test():
 		# data = sd[i]
 
 		# Scan time intervals
-		# print(time)
-		# log = ""
-		# for i in range(0, len(time) - 2):
-		# 	dif1 = time[i+1] - time[i]
-		# 	dif2 = time[i+2] - time[i+1]
-		# 	log += str(round(100 * (dif2 - dif1) / dif1)) + "%"
-		# 	log += ", "
-		
-		# print(log)
+		# scan_time_array(time)
 
+	# Start main loop to extract animation frames
+	configure_loguru()
+	testing_density = 1/1
+	dest_path = "valentingoy/103-frames-draft/"
+	file_prefix = "allsd"
+	file_type_token = "HDF5"
+	dimensions = [
+		["x", "linear", "HQ"],
+		["rho", "log", "LQ"],
+		["rhod", "log", "LQ"],
+		["vx", "linear", "LQ"],
+		["vy", "linear", "LQ"],
+		["vz", "linear", "LQ"],
+		["vdx", "linear", "LQ"],
+		["vdy", "linear", "LQ"],
+		["vdz", "linear", "LQ"],
+		["Bx", "linear", "LQ"],
+		["By", "linear", "LQ"],
+		["Bz", "linear", "LQ"],
+		["sd", "log", "HQ"]
+	]
+	kept_dimensions = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+	minmaxs = [ [0, 5e16], [-24, -15], [-26.5, -15], [-6e5, 6e5], [-6e5, 6e5], [-6e5, 6e5], [-6e5, 6e5], [-6e5, 6e5], [-6e5, 6e5], [0, 3.4e-4], [-1e-4, 1e-4], [-1e-4, 1e-4], [-3, 0] ]
+	nb_logs = 6
+	
+	size = time.shape[0]
+	for i in range(0, size):
+		print(i)
 
+		columns = [x[i], rho[i], rhod[i], vx[i], vy[i], vz[i], vdx[i], vdy[i], vdz[i], Bx[i], By[i], Bz[i], sd[i]]
 
+		data = np.column_stack(columns)
+
+		# Compact version of particles_textufy with this input data loop on 2D source data array
+		dest_file_name = "valentingoy-" + file_prefix + "-" + prepend_zeros(str(i), 3)
+		dest_file_name = enrich_output_file_name(dest_file_name, testing_density)
+		loop_vars = compute_loop_variables(data, testing_density)
+		step = loop_vars[0]
+		actual_count = loop_vars[1]
+
+		# Scan
+		# particles_scan(data, actual_count, step, dimensions, file_type_token, nb_logs)
+
+		# Export
+		particles_export(data, actual_count, step, dimensions, kept_dimensions, minmaxs, file_type_token, nb_logs, dest_path, dest_file_name, zoombox=False)
+	
 
 if __name__ == "__main__":
 	# textufy_valentin_goy_test_clumping()
-	textufy_valentin_goy_hd_test_clumping()
-	# textufy_valentin_goy_103_anim_test()
+	# textufy_valentin_goy_hd_test_clumping()
+	textufy_valentin_goy_103_anim_test()
