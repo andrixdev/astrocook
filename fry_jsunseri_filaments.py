@@ -10,7 +10,7 @@ from astrocutlery.utensils import prepend_zeros
 
 
 # James Sunseri
-def textufy_james_sunseri_gas_xyzrho():
+def textufy_james_sunseri_gas_xyzrho(is_test=False):
 	dimensions = [ ["x", "linear", "HQ"], ["y", "linear", "HQ"], ["z", "linear", "HQ"], ["dx", "log", "LQ"], ["rho", "log", "LQ"] ]
 	box_center_x = 0
 	box_center_y = 0
@@ -24,7 +24,7 @@ def textufy_james_sunseri_gas_xyzrho():
 	source_file = "./data/jamessunseri/1-frame/MDG_gas.h5"
 	file_type_token = "HDF5"
 	dest_path = "jamessunseri/1-frame/"
-	dest_file_name = "jamessunseri-gas-zoomed-" + file_prefix
+	dest_file_name = "jamessunseri-gas-zoomed-" + file_prefix + ("-testing" if is_test else "")
 	testing_density = 1/13 # 1/1 is full rendering
 	nb_logs = 15
 	skip_scanning = True
@@ -33,7 +33,7 @@ def textufy_james_sunseri_gas_xyzrho():
 	particles_textufy(source_file, file_type_token, dest_path, dest_file_name, dimensions, kept_dimensions, minmaxs, testing_density, nb_logs, skip_scanning, only_scanning, zoombox)
 # textufy_james_sunseri_gas_xyzrho()
 
-def textufy_james_sunseri_stars_xyzmass():
+def textufy_james_sunseri_stars_xyzmass(is_test=False):
 	dimensions = [ ["x", "linear", "HQ"], ["y", "linear", "HQ"], ["z", "linear", "HQ"], ["mass", "log", "LQ"] ]
 	box_center_x = 0
 	box_center_y = 0
@@ -47,7 +47,7 @@ def textufy_james_sunseri_stars_xyzmass():
 	source_file = "./data/jamessunseri/1-frame/MDG_stars.h5"
 	file_type_token = "HDF5"
 	dest_path = "jamessunseri/1-frame/"
-	dest_file_name = "jamessunseri-stars-zoomed-" + file_prefix
+	dest_file_name = "jamessunseri-stars-zoomed-" + file_prefix + ("-testing" if is_test else "")
 	testing_density = 1/4 # 1/1 is full rendering
 	nb_logs = 15
 	skip_scanning = True

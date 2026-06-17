@@ -7,7 +7,7 @@ from astrocutlery.cube_klodufy import klodufy
 from astrocutlery.utensils import prepend_zeros
 
 # YOHANDUBOIS GALAXY
-def klodufy_yohandubois_galaxy_rho ():
+def klodufy_yohandubois_galaxy_rho (is_test=False):
     dimensions = [ ["rho", "log"] ]
     minmaxs = [ [-7, -3] ]
     file_prefix = "density"
@@ -17,7 +17,7 @@ def klodufy_yohandubois_galaxy_rho ():
     size = 128
     quality = "high"
     dest_path = "yohandubois/1-frame/"
-    dest_file_name = "yohandubois-galaxy-rho-" + str(size)
+    dest_file_name = "yohandubois-galaxy-rho-" + str(size) + ("-testing" if is_test else "")
     testing_density = 1/1 # 1/1 is full rendering
     nb_logs = 20
     skip_scanning = False
@@ -25,7 +25,7 @@ def klodufy_yohandubois_galaxy_rho ():
     klodufy (source_file, file_type_token, size, dimensions, minmaxs, quality, dest_path, dest_file_name, testing_density, nb_logs, skip_scanning)
 # klodufy_yohandubois_galaxy_rho()
 
-def klodufy_yohandubois_galaxy_bz ():
+def klodufy_yohandubois_galaxy_bz(is_test=False):
     dimensions = [ ["bz", "linear"] ]
     minmaxs = [ [-0.00001, 0.00001] ]
     file_prefix = "bz"
@@ -35,7 +35,7 @@ def klodufy_yohandubois_galaxy_bz ():
     size = 256
     quality = "high"
     dest_path = "yohandubois/1-frame/"
-    dest_file_name = "yohandubois-galaxy-bz-" + str(size)
+    dest_file_name = "yohandubois-galaxy-bz-" + str(size) + ("-testing" if is_test else "")
     testing_density = 1/1 # 1/1 is full rendering
     nb_logs = 20
     skip_scanning = False

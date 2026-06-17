@@ -9,7 +9,7 @@ from astrocutlery import particles_textufy
 from astrocutlery.utensils import prepend_zeros
 
 # Fred Thompson star cluster
-def textufy_fred_thompson_starcluster_gas_xyzrho():
+def textufy_fred_thompson_starcluster_gas_xyzrho(is_test=False):
 	dimensions = [ ["x", "linear", "HQ"], ["y", "linear", "HQ"], ["z", "linear", "HQ"], ["dx", "log", "LQ"], ["rho", "log", "LQ"] ]
 	minmaxs = [ [-2000, 2000], [-2000, 2000], [-2000, 2000], [-5, 5], [-31, -20] ]
 	kept_dimensions = [1, 1, 1, 0, 1]
@@ -18,7 +18,7 @@ def textufy_fred_thompson_starcluster_gas_xyzrho():
 	source_file = "./data/fredthompson/1-frame/H10cluster_8pc_output176_gas.h5"
 	file_type_token = "HDF5"
 	dest_path = "fredthompson/1-frame/"
-	dest_file_name = "fredthompson-gas-" + file_prefix
+	dest_file_name = "fredthompson-gas-" + file_prefix + ("-testing" if is_test else "")
 	testing_density = 1/1 # 1/1 is full rendering
 	nb_logs = 15
 	skip_scanning = True
@@ -27,7 +27,7 @@ def textufy_fred_thompson_starcluster_gas_xyzrho():
 	particles_textufy(source_file, file_type_token, dest_path, dest_file_name, dimensions, kept_dimensions, minmaxs, testing_density, nb_logs, skip_scanning, only_scanning)
 # textufy_fred_thompson_starcluster_gas_xyzrho()
 
-def textufy_fred_thompson_starcluster_stars_xyzmass():
+def textufy_fred_thompson_starcluster_stars_xyzmass(is_test=False):
 	dimensions = [ ["x", "linear", "HQ"], ["y", "linear", "HQ"], ["z", "linear", "HQ"], ["mass", "log", "LQ"] ]
 	minmaxs = [ [-2000, 2000], [-2000, 2000], [-2000, 2000], [-3, 3.5] ]
 	kept_dimensions = [1, 1, 1, 1]
@@ -36,7 +36,7 @@ def textufy_fred_thompson_starcluster_stars_xyzmass():
 	source_file = "./data/fredthompson/1-frame/H10cluster_8pc_output176_stars.h5"
 	file_type_token = "HDF5"
 	dest_path = "fredthompson/1-frame/"
-	dest_file_name = "fredthompson-stars-" + file_prefix
+	dest_file_name = "fredthompson-stars-" + file_prefix + ("-testing" if is_test else "")
 	testing_density = 1/1 # 1/1 is full rendering
 	nb_logs = 15
 	skip_scanning = False
@@ -45,7 +45,7 @@ def textufy_fred_thompson_starcluster_stars_xyzmass():
 	particles_textufy(source_file, file_type_token, dest_path, dest_file_name, dimensions, kept_dimensions, minmaxs, testing_density, nb_logs, skip_scanning, only_scanning)
 # textufy_fred_thompson_starcluster_stars_xyzmass()
 
-def textufy_fred_thompson_starcluster_clusters_xyzmass():
+def textufy_fred_thompson_starcluster_clusters_xyzmass(is_test=False):
 	dimensions = [ ["x", "linear", "HQ"], ["y", "linear", "HQ"], ["z", "linear", "HQ"], ["id", "linear", "LQ"], ["mass", "log", "LQ"] ]
 	minmaxs = [ [-2000, 2000], [-2000, 2000], [-2000, 2000], [0, 600], [3, 7] ]
 	kept_dimensions = [1, 1, 1, 1, 1]
@@ -54,7 +54,7 @@ def textufy_fred_thompson_starcluster_clusters_xyzmass():
 	source_file = "./data/fredthompson/1-frame/H10cluster_8pc_output176_clusters.h5"
 	file_type_token = "HDF5"
 	dest_path = "fredthompson/1-frame/"
-	dest_file_name = "fredthompson-clusters-" + file_prefix
+	dest_file_name = "fredthompson-clusters-" + file_prefix + ("-testing" if is_test else "")
 	testing_density = 1/1 # 1/1 is full rendering
 	nb_logs = 15
 	skip_scanning = False

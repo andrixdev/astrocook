@@ -8,7 +8,7 @@ from loguru import logger
 from astrocutlery import particles_textufy
 from astrocutlery.utensils import prepend_zeros
 
-def textufy_maxime_lombart_test_collapse():
+def textufy_maxime_lombart_test_collapse(is_test=False):
 	dimensions = [
 		["x", "linear", "HQ"],
 		["y", "linear", "HQ"],
@@ -22,7 +22,7 @@ def textufy_maxime_lombart_test_collapse():
 	source_file = "./data/maximelombart/1-frame-test/collapse_data_ramses_test.npy"
 	file_type_token = "NUMPY"
 	dest_path = "maximelombart/1-frame-test/"
-	dest_file_name = "maximelombart-" + file_prefix
+	dest_file_name = "maximelombart-" + file_prefix + ("-testing" if is_test else "")
 	testing_density = 1/1
 	nb_logs = 15
 	skip_scanning = True
@@ -31,7 +31,7 @@ def textufy_maxime_lombart_test_collapse():
 	particles_textufy(source_file, file_type_token, dest_path, dest_file_name, dimensions, kept_dimensions, minmaxs, testing_density, nb_logs, skip_scanning, only_scanning)
 # textufy_maxime_lombart_test_collapse()
 
-def textufy_maxime_lombart_zoomed_test_collapse():
+def textufy_maxime_lombart_zoomed_test_collapse(is_test=False):
     dimensions = [
         ["x", "linear", "HQ"],
         ["y", "linear", "HQ"],
@@ -53,7 +53,7 @@ def textufy_maxime_lombart_zoomed_test_collapse():
     source_file = "./data/maximelombart/1-frame-test/collapse_data_ramses_test.npy"
     file_type_token = "NUMPY"
     dest_path = "maximelombart/1-frame-test/"
-    dest_file_name = "maximelombart-" + file_prefix + "-zoomed-" + str(box_virial_radius)
+    dest_file_name = "maximelombart-" + file_prefix + "-zoomed-" + str(box_virial_radius) + ("-testing" if is_test else "")
     testing_density = 1/1
     nb_logs = 15
     skip_scanning = False

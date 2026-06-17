@@ -10,7 +10,7 @@ from astrocutlery.utensils import prepend_zeros
 
 
 # Cheonsu Kang big box
-def textufy_cheonsukang_bigbox_xyzrho():
+def textufy_cheonsukang_bigbox_xyzrho(is_test=False):
 	dimensions = [ ["x", "linear", "HQ"], ["y", "linear", "HQ"], ["z", "linear", "HQ"], ["rho", "log", "LQ"] ]
 	box_center_x = 0.4987918675078839570
 	box_center_y = 0.5031370643040111723
@@ -24,7 +24,7 @@ def textufy_cheonsukang_bigbox_xyzrho():
 	source_file = "./data/cheonsukang/1-frame/cell_00373.sav"
 	file_type_token = "SAV"
 	dest_path = "cheonsukang/1-frame/"
-	dest_file_name = "cheonsukang-bigbox-zoomed-" + file_prefix
+	dest_file_name = "cheonsukang-bigbox-zoomed-" + file_prefix + ("-testing" if is_test else "")
 	testing_density = 1/40 # 1/1 is full rendering
 	nb_logs = 15
 	skip_scanning = False
@@ -33,7 +33,7 @@ def textufy_cheonsukang_bigbox_xyzrho():
 	particles_textufy(source_file, file_type_token, dest_path, dest_file_name, dimensions, kept_dimensions, minmaxs, testing_density, nb_logs, skip_scanning, only_scanning, zoombox)
 # textufy_cheonsukang_bigbox_xyzrho()
 
-def textufy_cheonsukang_bigbox_xyzvxvyvzrhopmetal():
+def textufy_cheonsukang_bigbox_xyzvxvyvzrhopmetal(is_test=False):
 	dimensions = [ ["x", "linear", "HQ"], ["y", "linear", "HQ"], ["z", "linear", "HQ"], ["vx", "linear", "HQ"], ["vy", "linear", "HQ"], ["vz", "linear", "HQ"], ["rho", "log", "LQ"], ["p", "log", "LQ"], ["metal", "linear", "LQ"] ]
 	box_center_x = 0.4987918675078839570
 	box_center_y = 0.5031370643040111723
@@ -47,7 +47,7 @@ def textufy_cheonsukang_bigbox_xyzvxvyvzrhopmetal():
 	source_file = "./data/cheonsukang/1-frame/cell_00373.sav"
 	file_type_token = "SAV"
 	dest_path = "cheonsukang/1-frame/"
-	dest_file_name = "cheonsukang-bigbox-zoomed-" + file_prefix
+	dest_file_name = "cheonsukang-bigbox-zoomed-" + file_prefix + ("-testing" if is_test else "")
 	testing_density = 1/4 # 1/1 is full rendering
 	nb_logs = 15
 	skip_scanning = True

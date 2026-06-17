@@ -9,7 +9,7 @@ from astrocutlery import particles_textufy
 from astrocutlery.utensils import prepend_zeros
 
 # San Han galaxy cluster
-def textufy_san_han_galaxy_cluster_xyzdensitytemp():
+def textufy_san_han_galaxy_cluster_xyzdensitytemp(is_test=False):
 	dimensions = [ ["x", "linear", "HQ"], ["y", "linear", "HQ"], ["z", "linear", "HQ"], ["density", "log", "LQ"], ["temperature", "log", "LQ"] ]
 	
 	box_center_x = 0.5168804
@@ -25,7 +25,7 @@ def textufy_san_han_galaxy_cluster_xyzdensitytemp():
 	source_file = "./data/sanhangalaxycluster/1-frame/nc_cluster.h5"
 	file_type_token = "HDF5-SANHAN"
 	dest_path = "sanhangalaxycluster/1-frame/"
-	dest_file_name = "sanhangalaxycluster-" + file_prefix
+	dest_file_name = "sanhangalaxycluster-" + file_prefix + ("-testing" if is_test else "")
 	testing_density = 1/3 # 1/1 is full rendering
 	nb_logs = 15
 	skip_scanning = True

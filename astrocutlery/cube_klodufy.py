@@ -254,7 +254,7 @@ def klodufy (source_file, file_type_token, size, dimensions, minmaxs, quality, d
         logs_count = 0
         
         for a in range(0, x_range):
-            for b in range(0, x_range):
+            for b in range(0, y_range):
                 for c in range(0, z_range):
                     aa = a * step
                     bb = b * step
@@ -322,7 +322,7 @@ def klodufy (source_file, file_type_token, size, dimensions, minmaxs, quality, d
     j = 0
     logs_count = 0
     for a in range(0, x_range):
-        for b in range(0, x_range):
+        for b in range(0, y_range):
             for c in range(0, z_range):
                 aa = a * step
                 bb = b * step

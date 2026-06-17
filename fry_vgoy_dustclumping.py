@@ -8,7 +8,7 @@ from loguru import logger
 from astrocutlery import particles_textufy
 from astrocutlery.utensils import prepend_zeros
 
-def textufy_valentin_goy_test_clumping():
+def textufy_valentin_goy_test_clumping(is_test=False):
 	dimensions = [
 		["x", "linear", "HQ"],
 		["rho", "log", "HQ"],
@@ -32,7 +32,7 @@ def textufy_valentin_goy_test_clumping():
 	source_file = "./data/valentingoy/1-frame-test/1D_magnetic_clumping_test.hdf5"
 	file_type_token = "HDF5-GOY"
 	dest_path = "valentingoy/1-frame-test/"
-	dest_file_name = "valentingoy-" + file_prefix
+	dest_file_name = "valentingoy-" + file_prefix + ("-testing" if is_test else "")
 	testing_density = 1/1 # 1/1 is full rendering
 	nb_logs = 20
 	skip_scanning = False
@@ -41,7 +41,7 @@ def textufy_valentin_goy_test_clumping():
 	particles_textufy(source_file, file_type_token, dest_path, dest_file_name, dimensions, kept_dimensions, minmaxs, testing_density, nb_logs, skip_scanning, only_scanning)
 # textufy_valentin_goy_test_clumping()
 
-def textufy_valentin_goy_hd_test_clumping():
+def textufy_valentin_goy_hd_test_clumping(is_test=False):
 	dimensions = [
 		["x", "linear", "HQ"],
 		["rho", "log", "LQ"],
@@ -66,7 +66,7 @@ def textufy_valentin_goy_hd_test_clumping():
 	source_file = "./data/valentingoy/1-frame-hd-test/1D_4096_test.hdf5"
 	file_type_token = "HDF5-GOY"
 	dest_path = "valentingoy/1-frame-hd-test/"
-	dest_file_name = "valentingoy-" + file_prefix
+	dest_file_name = "valentingoy-" + file_prefix + ("-testing" if is_test else "")
 	testing_density = 1/1 # 1/1 is full rendering
 	nb_logs = 20
 	skip_scanning = False
