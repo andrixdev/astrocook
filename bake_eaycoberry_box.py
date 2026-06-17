@@ -8,7 +8,6 @@ from astrocutlery.utensils import prepend_zeros
 
 # EMMAAYCOBERRY BOX
 def klodufy_emmaaycoberry_box (is_test=False):
-
     dimensions = [ ["rho", "log"] ]
     minmaxs = [ [-11, 1] ]
     file_prefix = "density"
@@ -24,4 +23,6 @@ def klodufy_emmaaycoberry_box (is_test=False):
     skip_scanning = False
     
     klodufy(source_file, file_type_token, size, dimensions, minmaxs, quality, dest_path, dest_file_name, testing_density, nb_logs, skip_scanning)
-klodufy_emmaaycoberry_box()
+
+if __name__ == "__main__":
+    klodufy_emmaaycoberry_box()

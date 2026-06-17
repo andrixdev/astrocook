@@ -32,4 +32,6 @@ def textufy_san_han_galaxy_cluster_xyzdensitytemp(is_test=False):
 	only_scanning = False
 
 	particles_textufy(source_file, file_type_token, dest_path, dest_file_name, dimensions, kept_dimensions, minmaxs, testing_density, nb_logs, skip_scanning, only_scanning, zoombox)
-# textufy_san_han_galaxy_cluster_xyzdensitytemp()
+
+if __name__ == "__main__":
+	textufy_san_han_galaxy_cluster_xyzdensitytemp()

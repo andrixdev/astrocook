@@ -25,7 +25,6 @@ def textufy_fred_thompson_starcluster_gas_xyzrho(is_test=False):
 	only_scanning = False
 
 	particles_textufy(source_file, file_type_token, dest_path, dest_file_name, dimensions, kept_dimensions, minmaxs, testing_density, nb_logs, skip_scanning, only_scanning)
-# textufy_fred_thompson_starcluster_gas_xyzrho()
 
 def textufy_fred_thompson_starcluster_stars_xyzmass(is_test=False):
 	dimensions = [ ["x", "linear", "HQ"], ["y", "linear", "HQ"], ["z", "linear", "HQ"], ["mass", "log", "LQ"] ]
@@ -43,7 +42,6 @@ def textufy_fred_thompson_starcluster_stars_xyzmass(is_test=False):
 	only_scanning = False
 
 	particles_textufy(source_file, file_type_token, dest_path, dest_file_name, dimensions, kept_dimensions, minmaxs, testing_density, nb_logs, skip_scanning, only_scanning)
-# textufy_fred_thompson_starcluster_stars_xyzmass()
 
 def textufy_fred_thompson_starcluster_clusters_xyzmass(is_test=False):
 	dimensions = [ ["x", "linear", "HQ"], ["y", "linear", "HQ"], ["z", "linear", "HQ"], ["id", "linear", "LQ"], ["mass", "log", "LQ"] ]
@@ -61,5 +59,8 @@ def textufy_fred_thompson_starcluster_clusters_xyzmass(is_test=False):
 	only_scanning = False
 
 	particles_textufy(source_file, file_type_token, dest_path, dest_file_name, dimensions, kept_dimensions, minmaxs, testing_density, nb_logs, skip_scanning, only_scanning)
-# textufy_fred_thompson_starcluster_clusters_xyzmass()
 
+# if __name__ == "__main__":
+	# textufy_fred_thompson_starcluster_gas_xyzrho()
+	# textufy_fred_thompson_starcluster_stars_xyzmass()
+	# textufy_fred_thompson_starcluster_clusters_xyzmass()

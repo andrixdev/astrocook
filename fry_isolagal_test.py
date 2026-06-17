@@ -8,7 +8,7 @@ from loguru import logger
 from astrocutlery import particles_textufy
 from astrocutlery.utensils import prepend_zeros
 
-# Isolated Galaxy for testing before RUM 2026 (from Tine by ??)
+# Isolated Galaxy for testing before RUM 2026 (from Tine by Maxime Trebitsch)
 def textufy_isolagal_stars_xyz(is_test=False):
 	dimensions = [
 		["x", "linear", "HQ"],
@@ -29,7 +29,6 @@ def textufy_isolagal_stars_xyz(is_test=False):
 	only_scanning = False
 
 	particles_textufy(source_file, file_type_token, dest_path, dest_file_name, dimensions, kept_dimensions, minmaxs, testing_density, nb_logs, skip_scanning, only_scanning)
-# textufy_isolagal_stars_xyz()
 
 def textufy_isolagal_gas_xyz(is_test=False):
 	dimensions = [
@@ -52,5 +51,7 @@ def textufy_isolagal_gas_xyz(is_test=False):
 	only_scanning = False
 
 	particles_textufy(source_file, file_type_token, dest_path, dest_file_name, dimensions, kept_dimensions, minmaxs, testing_density, nb_logs, skip_scanning, only_scanning)
-# textufy_isolagal_gas_xyz()
 
+# if __name__ == "__main__":
+	# textufy_isolagal_stars_xyz()
+	# textufy_isolagal_gas_xyz()

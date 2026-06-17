@@ -26,7 +26,7 @@ def textufy_maxime_rey_molecularcloud_gas_xyzrho(is_test=False):
 	only_scanning = True
 
 	particles_textufy(source_file, file_type_token, dest_path, dest_file_name, dimensions, kept_dimensions, minmaxs, testing_density, nb_logs, skip_scanning, only_scanning) # textufy_maxime_rey_molecularcloud_gas_xyzrho()
-# textufy_maxime_rey_molecularcloud_gas_xyzrho()
+
 
 # Maxime Rey new cloud
 def textufy_maxime_rey_newcloud_xyzrho(is_test=False):
@@ -53,7 +53,7 @@ def textufy_maxime_rey_newcloud_xyzrho(is_test=False):
 	only_scanning = False
 
 	particles_textufy(source_file, file_type_token, dest_path, dest_file_name, dimensions, kept_dimensions, minmaxs, testing_density, nb_logs, skip_scanning, only_scanning)
-# textufy_maxime_rey_newcloud_xyzrho()
+
 
 # Maxime Rey new cloud animation (168 frames)
 def textufy_maxime_rey_newcloud_xyzrho_frame(frame, index, is_test=False):
@@ -75,7 +75,7 @@ def textufy_maxime_rey_newcloud_xyzrho_frame(frame, index, is_test=False):
 	file_type_token = "HDF5"
 	dest_path = "maximereynewcloud/168-frames/"
 	dest_file_name = "maximereynewcloud-" + file_prefix + "-" + prepend_zeros(str(index), 3) + ("-testing" if is_test else "")
-	testing_density = 1/10 # 1/1 is full rendering
+	testing_density = 1/100 # 1/1 is full rendering
 	nb_logs = 2
 	skip_scanning = True
 	only_scanning = False
@@ -88,5 +88,10 @@ def textufy_maxime_rey_newcloud_full_168_anim(is_test=False):
 		textufy_maxime_rey_newcloud_xyzrho_frame(i + 17, i + 1, is_test)
 		
 	logger.success("Generated 168 animation frames.")
-# textufy_maxime_rey_newcloud_xyzrho_frame(17, 1)
-# textufy_maxime_rey_newcloud_full_168_anim()
+
+
+if __name__ == "__main__":
+	# textufy_maxime_rey_molecularcloud_gas_xyzrho()
+	# textufy_maxime_rey_newcloud_xyzrho()
+	# textufy_maxime_rey_newcloud_xyzrho_frame(17, 1)
+	textufy_maxime_rey_newcloud_full_168_anim()

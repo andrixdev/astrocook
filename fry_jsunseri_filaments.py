@@ -31,7 +31,6 @@ def textufy_james_sunseri_gas_xyzrho(is_test=False):
 	only_scanning = False
 
 	particles_textufy(source_file, file_type_token, dest_path, dest_file_name, dimensions, kept_dimensions, minmaxs, testing_density, nb_logs, skip_scanning, only_scanning, zoombox)
-# textufy_james_sunseri_gas_xyzrho()
 
 def textufy_james_sunseri_stars_xyzmass(is_test=False):
 	dimensions = [ ["x", "linear", "HQ"], ["y", "linear", "HQ"], ["z", "linear", "HQ"], ["mass", "log", "LQ"] ]
@@ -54,4 +53,7 @@ def textufy_james_sunseri_stars_xyzmass(is_test=False):
 	only_scanning = False
 
 	particles_textufy(source_file, file_type_token, dest_path, dest_file_name, dimensions, kept_dimensions, minmaxs, testing_density, nb_logs, skip_scanning, only_scanning, zoombox)
-# textufy_james_sunseri_stars_xyzmass()
+
+if __name__ == "__main__":
+	textufy_james_sunseri_gas_xyzrho()
+	textufy_james_sunseri_stars_xyzmass()

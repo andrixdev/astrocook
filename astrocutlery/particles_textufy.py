@@ -16,7 +16,7 @@ from loguru import logger
 from astrocutlery.utensils import round_to_n, remap, configure_loguru, is_within_box
 
 # file_type_token: "PHANTOM", "SHAMROCK", "NUMPY", "TXT", "HDF5", "HDF5-SANHAN" or "HDF5-GOY"
-def prepare_tracers_data(source_file, file_type_token):
+def prepare_particles_data(source_file, file_type_token):
 	
 	if (file_type_token == "PHANTOM"):
 		import sarracen
@@ -142,7 +142,7 @@ def prepare_tracers_data(source_file, file_type_token):
 		# d = var[0]; p = var[4]
 
 	else:
-		logger.error("[prepare_tracers_data(...)] Unknown file type token: " + file_type_token)
+		logger.error("[prepare_particles_data(...)] Unknown file type token: " + file_type_token)
 		
 		return False
 
@@ -157,7 +157,7 @@ def particles_textufy (source_file, file_type_token, dest_path, dest_file_name, 
 	testing_value = round(1/testing_density)
 	
 	# Load tracers data
-	data = prepare_tracers_data(source_file, file_type_token)
+	data = prepare_particles_data(source_file, file_type_token)
 	
 	# Hi
 	dest_file_name = dest_file_name + ("" if testing_value == 1 else ("-1-in-" + str(testing_value)))

@@ -26,4 +26,6 @@ def klodufy_fredthompson_starcluster(is_test=False):
     skip_scanning = False
     
     klodufy (source_file, file_type_token, size, dimensions, minmaxs, quality, dest_path, dest_file_name, testing_density, nb_logs, skip_scanning)
-klodufy_fredthompson_starcluster()
+
+if __name__ == "__main__":
+    klodufy_fredthompson_starcluster()

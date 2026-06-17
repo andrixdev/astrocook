@@ -23,7 +23,6 @@ def klodufy_yohandubois_galaxy_rho (is_test=False):
     skip_scanning = False
     
     klodufy (source_file, file_type_token, size, dimensions, minmaxs, quality, dest_path, dest_file_name, testing_density, nb_logs, skip_scanning)
-# klodufy_yohandubois_galaxy_rho()
 
 def klodufy_yohandubois_galaxy_bz(is_test=False):
     dimensions = [ ["bz", "linear"] ]
@@ -41,4 +40,7 @@ def klodufy_yohandubois_galaxy_bz(is_test=False):
     skip_scanning = False
     
     klodufy(source_file, file_type_token, size, dimensions, minmaxs, quality, dest_path, dest_file_name, testing_density, nb_logs, skip_scanning)
-# klodufy_yohandubois_galaxy_bz()
+
+# if __name__ == "__main__":
+#     klodufy_yohandubois_galaxy_rho()
+#     klodufy_yohandubois_galaxy_bz()

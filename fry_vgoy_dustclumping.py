@@ -39,7 +39,6 @@ def textufy_valentin_goy_test_clumping(is_test=False):
 	only_scanning = False
 
 	particles_textufy(source_file, file_type_token, dest_path, dest_file_name, dimensions, kept_dimensions, minmaxs, testing_density, nb_logs, skip_scanning, only_scanning)
-# textufy_valentin_goy_test_clumping()
 
 def textufy_valentin_goy_hd_test_clumping(is_test=False):
 	dimensions = [
@@ -73,32 +72,55 @@ def textufy_valentin_goy_hd_test_clumping(is_test=False):
 	only_scanning = False
 
 	particles_textufy(source_file, file_type_token, dest_path, dest_file_name, dimensions, kept_dimensions, minmaxs, testing_density, nb_logs, skip_scanning, only_scanning)
-# textufy_valentin_goy_hd_test_clumping()
 
-# def textufy_valentin_goy_103_anim_test():
-# 	with h5py.File('1D_4096_103_frames_test.hdf5', 'r') as hdf:
-# 		# Afficher la structure du fichier
-# 		hdf.visit(print)
+def textufy_valentin_goy_103_anim_test():
+	import h5py
 
-# 		# Lire des données spécifiques
-# 		rhod = hdf['Alex/rhod'][:,:]#1D array
-# 		sd = hdf['Alex/sd'][:,:]#1D array
-# 		rho = hdf['Alex/rho'][:,:]#1D array
-# 		vz = hdf['Alex/vz'][:,:]#1D array
-# 		vy = hdf['Alex/vy'][:,:]#1D array
-# 		vdz = hdf['Alex/vdz'][:,:]#1D array
-# 		vdy = hdf['Alex/vdy'][:,:]#1D array
-# 		Bz = hdf['Alex/Bz'][:,:]#1D array
-# 		By = hdf['Alex/By'][:,:]#1D array
-# 		vx = hdf['Alex/vx'][:,:]#1D array
-# 		vdx = hdf['Alex/vdx'][:,:]#1D array
-# 		group = hdf['Alex']
+	with h5py.File('./data/valentingoy/103-frames-draft/1D_4096_103_frames_draft.hdf5', 'r') as hdf:
+		# Afficher la structure du fichier
+		hdf.visit(print)
 
-# 		sd_max = hdf['Alex/sd_max'][:]#1D array
-# 		time = hdf['Alex/time'][:]#1D array
+		# Lire des données spécifiques
+		x = hdf['Alex/x'][:,:] #2D array
+		rho = hdf['Alex/rho'][:,:] #2D array
+		rhod = hdf['Alex/rhod'][:,:] #2D array
+		vx = hdf['Alex/vx'][:,:] #2D array
+		vz = hdf['Alex/vz'][:,:] #2D array
+		vy = hdf['Alex/vy'][:,:] #2D array
+		vdx = hdf['Alex/vdx'][:,:] #2D array
+		vdz = hdf['Alex/vdz'][:,:] #2D array
+		vdy = hdf['Alex/vdy'][:,:] #2D array
+		Bx = hdf['Alex/By'][:,:] #2D array
+		By = hdf['Alex/By'][:,:] #2D array
+		Bz = hdf['Alex/Bz'][:,:] #2D array
+		sd = hdf['Alex/sd'][:,:] #2D array
+		group = hdf['Alex']
+
+		sd_max = hdf['Alex/sd_max'][:] #1D array
+		time = hdf['Alex/time'][:] #1D array
+
+		rho_0 = group.attrs['rho_0'] #Scalar
+		rhod_0 = group.attrs['rhod_0'] #Scalar
+
+		print(sd.shape)
+		print(sd[sd.shape[0] - 1])
+		# data = sd[i]
+
+		# Scan time intervals
+		# print(time)
+		# log = ""
+		# for i in range(0, len(time) - 2):
+		# 	dif1 = time[i+1] - time[i]
+		# 	dif2 = time[i+2] - time[i+1]
+		# 	log += str(round(100 * (dif2 - dif1) / dif1)) + "%"
+		# 	log += ", "
+		
+		# print(log)
 
 
-# 		rho_0 = group.attrs['rho_0']#Scalar
-# 		rhod_0 = group.attrs['rhod_0']#Scalar
 
-	
+
+if __name__ == "__main__":
+	# textufy_valentin_goy_test_clumping()
+	# textufy_valentin_goy_hd_test_clumping()
+	textufy_valentin_goy_103_anim_test()

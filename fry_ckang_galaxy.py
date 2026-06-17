@@ -8,7 +8,6 @@ from loguru import logger
 from astrocutlery import particles_textufy
 from astrocutlery.utensils import prepend_zeros
 
-
 # Cheonsu Kang big box
 def textufy_cheonsukang_bigbox_xyzrho(is_test=False):
 	dimensions = [ ["x", "linear", "HQ"], ["y", "linear", "HQ"], ["z", "linear", "HQ"], ["rho", "log", "LQ"] ]
@@ -31,7 +30,6 @@ def textufy_cheonsukang_bigbox_xyzrho(is_test=False):
 	only_scanning = True
 
 	particles_textufy(source_file, file_type_token, dest_path, dest_file_name, dimensions, kept_dimensions, minmaxs, testing_density, nb_logs, skip_scanning, only_scanning, zoombox)
-# textufy_cheonsukang_bigbox_xyzrho()
 
 def textufy_cheonsukang_bigbox_xyzvxvyvzrhopmetal(is_test=False):
 	dimensions = [ ["x", "linear", "HQ"], ["y", "linear", "HQ"], ["z", "linear", "HQ"], ["vx", "linear", "HQ"], ["vy", "linear", "HQ"], ["vz", "linear", "HQ"], ["rho", "log", "LQ"], ["p", "log", "LQ"], ["metal", "linear", "LQ"] ]
@@ -54,4 +52,7 @@ def textufy_cheonsukang_bigbox_xyzvxvyvzrhopmetal(is_test=False):
 	only_scanning = False
 
 	particles_textufy(source_file, file_type_token, dest_path, dest_file_name, dimensions, kept_dimensions, minmaxs, testing_density, nb_logs, skip_scanning, only_scanning, zoombox)
-# textufy_cheonsukang_bigbox_xyzvxvyvzrhopmetal()
+
+# if __name__ == "__main__":
+	# textufy_cheonsukang_bigbox_xyzrho()
+	# textufy_cheonsukang_bigbox_xyzvxvyvzrhopmetal()
