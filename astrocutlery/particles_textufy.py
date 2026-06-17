@@ -142,10 +142,29 @@ def prepare_particles_data(source_file, file_type_token):
 		# d = var[0]; p = var[4]
 
 	else:
-		logger.error("[prepare_particles_data(...)] Unknown file type token: " + file_type_token)
+		logger.error("Unknown file type token: " + file_type_token)
 		
 		return False
 
+def compute_loop_variables(data, testing_density):
+	testing_value = round(1/testing_density)
+
+	# Get step
+	step = math.floor(testing_value)
+
+	# Get actual_count
+	count = data.shape[0]
+	actual_count = math.floor(count * testing_density)
+	log_ratio = "all of " if testing_value == 1 else ("1 in " + str(testing_value) + " of all ")
+	logger.info("About to process " + log_ratio + str(count) + " (== " + str(actual_count) + ") text rows...")
+
+	return [step, actual_count]
+
+def enrich_output_file_name(dest_file_name, testing_density):
+	testing_value = round(1/testing_density)
+
+	return dest_file_name + ("" if testing_value == 1 else ("-1-in-" + str(testing_value)))
+	
 def particles_scan(data, actual_count, step, dimensions, file_type_token, nb_logs):
 	logger.info("Scanning data to detect extrema for remapping...")
 	start_time = datetime.datetime.now()
@@ -216,12 +235,15 @@ def particles_scan(data, actual_count, step, dimensions, file_type_token, nb_log
 	delta = end_time.timestamp() - start_time.timestamp()
 	logger.success("Scanned data in: " + str(round(delta, 2)) + " seconds.")
 
-def particles_export(data, actual_count, step, dimensions, kept_dimensions, minmaxs, file_type_token, nb_logs, destination_file, dest_file_name, zoombox=False):
+def particles_export(data, actual_count, step, dimensions, kept_dimensions, minmaxs, file_type_token, nb_logs, dest_path, dest_file_name, zoombox=False):
 	# Log start info
 	logger.info("Exporting: remapping data and writing to file...")
 	start_time = datetime.datetime.now()
 	if (zoombox):
 		logger.warning("Filtering with zoombox: " + str(zoombox) + " (x, y, z, rad)")
+
+	# Open export destination file
+	destination_file = open("output/" + dest_path + dest_file_name + ".txt", "w")
 
 	# Init
 	is_first_line_written = True
@@ -323,26 +345,20 @@ def particles_textufy (source_file, file_type_token, dest_path, dest_file_name, 
 		logger.error("Neither scanning nor exporting, aborting function.")
 		return
 
-	# Compute step size
-	testing_density = min(1, testing_density) # Make sure it don't go krazy (> 1)
-	testing_value = round(1/testing_density)
-	step = math.floor(testing_value)
+	# Secure input arguments
+	testing_density = min(1, testing_density)
+
+	# Load particles data
+	data = prepare_particles_data(source_file, file_type_token)
 
 	# Prepare output file name
-	dest_file_name = dest_file_name + ("" if testing_value == 1 else ("-1-in-" + str(testing_value)))
+	dest_file_name = enrich_output_file_name(dest_file_name, testing_density)
 	logger.info("Starting work on " + dest_file_name + "...")
 	
-	# Load tracers data
-	data = prepare_particles_data(source_file, file_type_token)
-	
-	# Prepare export file
-	destination_file = open("output/" + dest_path + dest_file_name + ".txt", "w")
-	
-	# Get log ratio
-	count = data.shape[0]
-	actual_count = math.floor(count * testing_density)
-	log_ratio = "all of " if testing_value == 1 else ("1 in " + str(testing_value) + " of all ")
-	logger.info("Processing " + log_ratio + str(count) + " (== " + str(actual_count) + ") text rows to " + dest_file_name + ".txt...")
+	# Get loop variables (step and acutal_count)
+	loop_vars = compute_loop_variables(data, testing_density)
+	step = loop_vars[0]
+	actual_count = loop_vars[1]
 	
 	# LOOP 1: scan
 	if (is_scanning):
@@ -350,6 +366,4 @@ def particles_textufy (source_file, file_type_token, dest_path, dest_file_name, 
 	
 	# LOOP 2: export (remap & write)
 	if (is_exporting):
-		particles_export(data, actual_count, step, dimensions, kept_dimensions, minmaxs, file_type_token, nb_logs, destination_file, dest_file_name, zoombox=False)
-
-		
+		particles_export(data, actual_count, step, dimensions, kept_dimensions, minmaxs, file_type_token, nb_logs, dest_path, dest_file_name, zoombox=False)

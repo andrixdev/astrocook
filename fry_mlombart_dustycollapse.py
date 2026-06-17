@@ -56,7 +56,7 @@ def textufy_maxime_lombart_zoomed_test_collapse(is_test=False):
     testing_density = 1/1
     nb_logs = 15
     is_scanning = True
-    is_exporting = True
+    is_exporting = False
     
     particles_textufy(source_file, file_type_token, dest_path, dest_file_name, dimensions, kept_dimensions, minmaxs, testing_density, nb_logs, is_scanning, is_exporting, zoombox)
 
