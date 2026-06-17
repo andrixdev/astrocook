@@ -147,42 +147,42 @@ def prepare_particles_data(source_file, file_type_token):
 		return False
 
 # Main function to textufy particles data dumps, with options to customize the process
-def particles_textufy (source_file, file_type_token, dest_path, dest_file_name, dimensions, kept_dimensions, minmaxs, testing_density, nb_logs, skip_scanning, only_scanning, zoombox=None):
-	
+def particles_textufy (source_file, file_type_token, dest_path, dest_file_name, dimensions, kept_dimensions, minmaxs, testing_density, nb_logs, is_scanning, is_exporting, zoombox=None):
+
 	# Configure loguru
 	configure_loguru()
-	
-	# Testing mode inits
+
+	# Check if the method should run anything
+	if (not is_scanning and not is_exporting):
+		logger.error("Neither scanning nor exporting, aborting function.")
+		return
+
+	# Compute step size
 	testing_density = min(1, testing_density) # Make sure it don't go krazy (> 1)
 	testing_value = round(1/testing_density)
+	step = math.floor(testing_value)
+
+	# Prepare output file name
+	dest_file_name = dest_file_name + ("" if testing_value == 1 else ("-1-in-" + str(testing_value)))
+	logger.info("Starting work on " + dest_file_name + "...")
 	
 	# Load tracers data
 	data = prepare_particles_data(source_file, file_type_token)
 	
-	# Hi
-	dest_file_name = dest_file_name + ("" if testing_value == 1 else ("-1-in-" + str(testing_value)))
-	logger.info("Starting work on " + dest_file_name + "...")
-	
 	# Prepare export file
 	destination_file = open("output/" + dest_path + dest_file_name + ".txt", "w")
 	
-	# Get dimensions
+	# Get dimensions and log ratio
 	dims = len(dimensions)
 	count = data.shape[0]
-	# count = data.shape[1]
 	actual_count = math.floor(count * testing_density)
-	
 	log_ratio = "all of " if testing_value == 1 else ("1 in " + str(testing_value) + " of all ")
 	logger.info("Processing " + log_ratio + str(count) + " (== " + str(actual_count) + ") text rows to " + dest_file_name + ".txt...")
 	
-	step = math.floor(testing_value)
-	
-	# Track time taken
-	start_time = datetime.datetime.now()
-	
 	# LOOP 1: scan
-	if (not skip_scanning):
+	if (is_scanning):
 		logger.info("Scanning data to detect extrema for remapping...")
+		start_time = datetime.datetime.now()
 		
 		# Init scanned minmax array (extremal values of positions, velocities... whatever)
 		real_minmaxs = []
@@ -236,29 +236,34 @@ def particles_textufy (source_file, file_type_token, dest_path, dest_file_name, 
 					real_minmaxs[d][0] = val
 				
 			if (i % max(1, int(round(actual_count/nb_logs))) == 0):
-				print(str(i) + "th row is: " + row)
+				logger.bind(color="fg #E44").trace(str(i) + "th row is: " + row)
 			
 		# Log detected extrema
 		for d in range(0, dims):
 			dimension_name = dimensions[d][0]
-			print("Min value for " + dimension_name + " is: " + str(real_minmaxs[d][0]))
-			print("Max value for " + dimension_name + " is: " + str(real_minmaxs[d][1]))
+			logger.bind(color="fg #DA7").trace("Min value for " + dimension_name + " is: " + str(real_minmaxs[d][0]))
+			logger.bind(color="fg #DA7").trace("Max value for " + dimension_name + " is: " + str(real_minmaxs[d][1]))
 			
 		# Log scanning time
-		mid_time = datetime.datetime.now()
-		delta = mid_time.timestamp() - start_time.timestamp()
+		end_time = datetime.datetime.now()
+		delta = end_time.timestamp() - start_time.timestamp()
 		logger.success("Scanned data in: " + str(round(delta, 2)) + " seconds.")
 	
-	# LOOP 2: remap & write
-	is_first_line_written = True
-	is_in_box = True # Init to true to avoid issues when zoombox is not set
-	output_rows_count = 0
-	if (not only_scanning):
-		logger.info("Remapping data and writing to file...")
+	# LOOP 2: export (remap & write)
+	if (is_exporting):
 
+		# Log start info
+		logger.info("Exporting: remapping data and writing to file...")
+		start_time = datetime.datetime.now()
 		if (zoombox):
 			logger.warning("Filtering with zoombox: " + str(zoombox) + " (x, y, z, rad)")
 
+		# Init
+		is_first_line_written = True
+		is_in_box = True # Init to true to avoid issues when zoombox is not set
+		output_rows_count = 0
+
+		# Loop
 		for j in range(0, actual_count):
 			jj = j * step
 			
@@ -322,9 +327,9 @@ def particles_textufy (source_file, file_type_token, dest_path, dest_file_name, 
 			# Log row sometimes
 			if (j % max(1, int(round(actual_count/nb_logs))) == 0):
 				if (zoombox and not is_in_box):
-					print(str(j) + "th remapped row is: out of zoombox")
+					logger.bind(color="fg #3FB").trace(str(j) + "th remapped row is: out of zoombox")
 				else:
-					print(str(j) + "th remapped row is: " + row.lstrip('\n'))
+					logger.bind(color="fg #3FB").trace(str(j) + "th remapped row is: " + row.lstrip('\n'))
 
 			# Write to file
 			if (not zoombox or (zoombox and is_in_box)):
@@ -332,10 +337,10 @@ def particles_textufy (source_file, file_type_token, dest_path, dest_file_name, 
 				output_rows_count += 1
 				is_first_line_written = False
 
-		# Log normalizing time
+		# Log export time
 		end_time = datetime.datetime.now()
-		delta = end_time.timestamp() - (mid_time.timestamp() if (not skip_scanning) else start_time.timestamp())
-		logger.success("Ramapped and wrote data in: " + str(round(delta, 2)) + " seconds.")
-		
+		delta = end_time.timestamp() - start_time.timestamp()
+		logger.success("Exported data in: " + str(round(delta, 2)) + " seconds.")
+
 		# Conclude
 		logger.success("File " + dest_file_name + ".txt with " + str(output_rows_count) + " rows was created.")

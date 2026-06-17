@@ -27,10 +27,10 @@ def textufy_james_sunseri_gas_xyzrho(is_test=False):
 	dest_file_name = "jamessunseri-gas-zoomed-" + file_prefix + ("-testing" if is_test else "")
 	testing_density = 1/13 # 1/1 is full rendering
 	nb_logs = 15
-	skip_scanning = True
-	only_scanning = False
+	is_scanning = False
+	is_exporting = True
 
-	particles_textufy(source_file, file_type_token, dest_path, dest_file_name, dimensions, kept_dimensions, minmaxs, testing_density, nb_logs, skip_scanning, only_scanning, zoombox)
+	particles_textufy(source_file, file_type_token, dest_path, dest_file_name, dimensions, kept_dimensions, minmaxs, testing_density, nb_logs, is_scanning, is_exporting, zoombox)
 
 def textufy_james_sunseri_stars_xyzmass(is_test=False):
 	dimensions = [ ["x", "linear", "HQ"], ["y", "linear", "HQ"], ["z", "linear", "HQ"], ["mass", "log", "LQ"] ]
@@ -49,10 +49,10 @@ def textufy_james_sunseri_stars_xyzmass(is_test=False):
 	dest_file_name = "jamessunseri-stars-zoomed-" + file_prefix + ("-testing" if is_test else "")
 	testing_density = 1/4 # 1/1 is full rendering
 	nb_logs = 15
-	skip_scanning = True
-	only_scanning = False
+	is_scanning = False
+	is_exporting = True
 
-	particles_textufy(source_file, file_type_token, dest_path, dest_file_name, dimensions, kept_dimensions, minmaxs, testing_density, nb_logs, skip_scanning, only_scanning, zoombox)
+	particles_textufy(source_file, file_type_token, dest_path, dest_file_name, dimensions, kept_dimensions, minmaxs, testing_density, nb_logs, is_scanning, is_exporting, zoombox)
 
 if __name__ == "__main__":
 	textufy_james_sunseri_gas_xyzrho()

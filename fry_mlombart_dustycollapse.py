@@ -25,10 +25,10 @@ def textufy_maxime_lombart_test_collapse(is_test=False):
 	dest_file_name = "maximelombart-" + file_prefix + ("-testing" if is_test else "")
 	testing_density = 1/1
 	nb_logs = 15
-	skip_scanning = True
-	only_scanning = False
+	is_scanning = False
+	is_exporting = True
 	
-	particles_textufy(source_file, file_type_token, dest_path, dest_file_name, dimensions, kept_dimensions, minmaxs, testing_density, nb_logs, skip_scanning, only_scanning)
+	particles_textufy(source_file, file_type_token, dest_path, dest_file_name, dimensions, kept_dimensions, minmaxs, testing_density, nb_logs, is_scanning, is_exporting)
 
 def textufy_maxime_lombart_zoomed_test_collapse(is_test=False):
     dimensions = [
@@ -55,10 +55,10 @@ def textufy_maxime_lombart_zoomed_test_collapse(is_test=False):
     dest_file_name = "maximelombart-" + file_prefix + "-zoomed-" + str(box_virial_radius) + ("-testing" if is_test else "")
     testing_density = 1/1
     nb_logs = 15
-    skip_scanning = False
-    only_scanning = False
+    is_scanning = True
+    is_exporting = True
     
-    particles_textufy(source_file, file_type_token, dest_path, dest_file_name, dimensions, kept_dimensions, minmaxs, testing_density, nb_logs, skip_scanning, only_scanning, zoombox)
+    particles_textufy(source_file, file_type_token, dest_path, dest_file_name, dimensions, kept_dimensions, minmaxs, testing_density, nb_logs, is_scanning, is_exporting, zoombox)
 
 if __name__ == "__main__":
     # textufy_maxime_lombart_test_collapse()

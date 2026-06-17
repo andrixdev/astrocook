@@ -35,10 +35,10 @@ def textufy_valentin_goy_test_clumping(is_test=False):
 	dest_file_name = "valentingoy-" + file_prefix + ("-testing" if is_test else "")
 	testing_density = 1/1 # 1/1 is full rendering
 	nb_logs = 20
-	skip_scanning = False
-	only_scanning = False
+	is_scanning = True
+	is_exporting = True
 
-	particles_textufy(source_file, file_type_token, dest_path, dest_file_name, dimensions, kept_dimensions, minmaxs, testing_density, nb_logs, skip_scanning, only_scanning)
+	particles_textufy(source_file, file_type_token, dest_path, dest_file_name, dimensions, kept_dimensions, minmaxs, testing_density, nb_logs, is_scanning, is_exporting)
 
 def textufy_valentin_goy_hd_test_clumping(is_test=False):
 	dimensions = [
@@ -68,10 +68,10 @@ def textufy_valentin_goy_hd_test_clumping(is_test=False):
 	dest_file_name = "valentingoy-" + file_prefix + ("-testing" if is_test else "")
 	testing_density = 1/1 # 1/1 is full rendering
 	nb_logs = 20
-	skip_scanning = False
-	only_scanning = False
+	is_scanning = False
+	is_exporting = True
 
-	particles_textufy(source_file, file_type_token, dest_path, dest_file_name, dimensions, kept_dimensions, minmaxs, testing_density, nb_logs, skip_scanning, only_scanning)
+	particles_textufy(source_file, file_type_token, dest_path, dest_file_name, dimensions, kept_dimensions, minmaxs, testing_density, nb_logs, is_scanning, is_exporting)
 
 def textufy_valentin_goy_103_anim_test():
 	import h5py
@@ -122,5 +122,5 @@ def textufy_valentin_goy_103_anim_test():
 
 if __name__ == "__main__":
 	# textufy_valentin_goy_test_clumping()
-	# textufy_valentin_goy_hd_test_clumping()
-	textufy_valentin_goy_103_anim_test()
+	textufy_valentin_goy_hd_test_clumping()
+	# textufy_valentin_goy_103_anim_test()

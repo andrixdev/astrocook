@@ -20,9 +20,9 @@ def klodufy_emmaaycoberry_box (is_test=False):
     dest_file_name = "emmaaycoberry-box-rho-" + str(size) + ("-testing" if is_test else "")
     testing_density = 1/2 # 1/1 is full rendering
     nb_logs = 20
-    skip_scanning = False
+    is_scanning = True
     
-    klodufy(source_file, file_type_token, size, dimensions, minmaxs, quality, dest_path, dest_file_name, testing_density, nb_logs, skip_scanning)
+    klodufy(source_file, file_type_token, size, dimensions, minmaxs, quality, dest_path, dest_file_name, testing_density, nb_logs, is_scanning)
 
 if __name__ == "__main__":
     klodufy_emmaaycoberry_box()

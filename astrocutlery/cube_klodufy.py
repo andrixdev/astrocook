@@ -199,7 +199,7 @@ def prepare_data_cube (source_file, file_type_token, dimensionality):
 # 1-dimension high quality intensities are exported to 16-bit single-channel 3D-texture, TextureFormat.R16 in Unity
 # 3-dimension low quality intensities are exported to 3 x 8-bit RGB 3D-textures, TextureFormat.RGB24 in Unity
 # 3-dimension high quality intensities are exported to 3 x 16-bit RGB 3D-textures, TextureFormat.RGB48 in Unity
-def klodufy (source_file, file_type_token, size, dimensions, minmaxs, quality, dest_path, dest_file_name, testing_density, nb_logs, skip_scanning):
+def klodufy (source_file, file_type_token, size, dimensions, minmaxs, quality, dest_path, dest_file_name, testing_density, nb_logs, is_scanning):
     
     # Testing mode inits
     testing_density = min(1, testing_density) # Make sure it don't go krazy (> 1)
@@ -242,7 +242,7 @@ def klodufy (source_file, file_type_token, size, dimensions, minmaxs, quality, d
     step = math.floor(data.shape[1] / x_range)
     
     # LOOP 1: scan & detect extreme values
-    if (not skip_scanning):
+    if (is_scanning):
         print("Scanning " + log_ratio +  str(base_count) + " (== " + str(actual_count) + ") rows to determine min and max values...")
         
         # Init minmax array (extremal values of positions, velocities... whatever)

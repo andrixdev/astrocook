@@ -26,10 +26,10 @@ def textufy_cheonsukang_bigbox_xyzrho(is_test=False):
 	dest_file_name = "cheonsukang-bigbox-zoomed-" + file_prefix + ("-testing" if is_test else "")
 	testing_density = 1/40 # 1/1 is full rendering
 	nb_logs = 15
-	skip_scanning = False
-	only_scanning = True
+	is_scanning = True
+	is_exporting = False
 
-	particles_textufy(source_file, file_type_token, dest_path, dest_file_name, dimensions, kept_dimensions, minmaxs, testing_density, nb_logs, skip_scanning, only_scanning, zoombox)
+	particles_textufy(source_file, file_type_token, dest_path, dest_file_name, dimensions, kept_dimensions, minmaxs, testing_density, nb_logs, is_scanning, is_exporting, zoombox)
 
 def textufy_cheonsukang_bigbox_xyzvxvyvzrhopmetal(is_test=False):
 	dimensions = [ ["x", "linear", "HQ"], ["y", "linear", "HQ"], ["z", "linear", "HQ"], ["vx", "linear", "HQ"], ["vy", "linear", "HQ"], ["vz", "linear", "HQ"], ["rho", "log", "LQ"], ["p", "log", "LQ"], ["metal", "linear", "LQ"] ]
@@ -48,10 +48,10 @@ def textufy_cheonsukang_bigbox_xyzvxvyvzrhopmetal(is_test=False):
 	dest_file_name = "cheonsukang-bigbox-zoomed-" + file_prefix + ("-testing" if is_test else "")
 	testing_density = 1/4 # 1/1 is full rendering
 	nb_logs = 15
-	skip_scanning = True
-	only_scanning = False
+	is_scanning = False
+	is_exporting = True
 
-	particles_textufy(source_file, file_type_token, dest_path, dest_file_name, dimensions, kept_dimensions, minmaxs, testing_density, nb_logs, skip_scanning, only_scanning, zoombox)
+	particles_textufy(source_file, file_type_token, dest_path, dest_file_name, dimensions, kept_dimensions, minmaxs, testing_density, nb_logs, is_scanning, is_exporting, zoombox)
 
 # if __name__ == "__main__":
 	# textufy_cheonsukang_bigbox_xyzrho()

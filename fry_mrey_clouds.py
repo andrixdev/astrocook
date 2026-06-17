@@ -22,10 +22,10 @@ def textufy_maxime_rey_molecularcloud_gas_xyzrho(is_test=False):
 	dest_file_name = "maximereycloud-gas-" + file_prefix + ("-testing" if is_test else "")
 	testing_density = 1/1 # 1/1 is full rendering
 	nb_logs = 15
-	skip_scanning = False
-	only_scanning = True
+	is_scanning = True
+	is_exporting = False
 
-	particles_textufy(source_file, file_type_token, dest_path, dest_file_name, dimensions, kept_dimensions, minmaxs, testing_density, nb_logs, skip_scanning, only_scanning) # textufy_maxime_rey_molecularcloud_gas_xyzrho()
+	particles_textufy(source_file, file_type_token, dest_path, dest_file_name, dimensions, kept_dimensions, minmaxs, testing_density, nb_logs, is_scanning, is_exporting) # textufy_maxime_rey_molecularcloud_gas_xyzrho()
 
 
 # Maxime Rey new cloud
@@ -49,10 +49,10 @@ def textufy_maxime_rey_newcloud_xyzrho(is_test=False):
 	dest_file_name = "maximereynewcloud-" + file_prefix + ("-testing" if is_test else "")
 	testing_density = 1/1 # 1/1 is full rendering
 	nb_logs = 15
-	skip_scanning = True
-	only_scanning = False
+	is_scanning = False
+	is_exporting = True
 
-	particles_textufy(source_file, file_type_token, dest_path, dest_file_name, dimensions, kept_dimensions, minmaxs, testing_density, nb_logs, skip_scanning, only_scanning)
+	particles_textufy(source_file, file_type_token, dest_path, dest_file_name, dimensions, kept_dimensions, minmaxs, testing_density, nb_logs, is_scanning, is_exporting)
 
 
 # Maxime Rey new cloud animation (168 frames)
@@ -77,10 +77,10 @@ def textufy_maxime_rey_newcloud_xyzrho_frame(frame, index, is_test=False):
 	dest_file_name = "maximereynewcloud-" + file_prefix + "-" + prepend_zeros(str(index), 3) + ("-testing" if is_test else "")
 	testing_density = 1/100 # 1/1 is full rendering
 	nb_logs = 2
-	skip_scanning = True
-	only_scanning = False
+	is_scanning = False
+	is_exporting = True
 
-	particles_textufy(source_file, file_type_token, dest_path, dest_file_name, dimensions, kept_dimensions, minmaxs, testing_density, nb_logs, skip_scanning, only_scanning)
+	particles_textufy(source_file, file_type_token, dest_path, dest_file_name, dimensions, kept_dimensions, minmaxs, testing_density, nb_logs, is_scanning, is_exporting)
 def textufy_maxime_rey_newcloud_full_168_anim(is_test=False):
 	logger.info("Generating 168 animation frames with positions and rho...")
 	
