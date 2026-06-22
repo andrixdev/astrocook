@@ -57,3 +57,30 @@ def configure_loguru():
 	# logger.error()
 	# logger.critical()
      
+def get_ordinal_suffix(number: int) -> str:
+    
+    # Returns the appropriate ordinal suffix ('st', 'nd', 'rd', or 'th') 
+    # for a given integer up to 1,000,000,000.
+    
+    # Enforce an upper boundary
+    if not (0 <= number <= 1_000_000_000):
+        logger.error("The integer must be between 0 and 1,000,000,000 inclusive.")
+    
+    # Extract the final two digits to check for the teen exceptions (11, 12, 13)
+    last_two_digits = number % 100
+    
+    if last_two_digits in {11, 12, 13}:
+        return "th"
+    
+    # Extract the absolute final digit for standard assignment
+    last_digit = number % 10
+
+    if last_digit == 1:
+        return "st"
+    elif last_digit == 2:
+        return "nd"
+    elif last_digit == 3:
+        return "rd"
+    else:
+        return "th"
+    

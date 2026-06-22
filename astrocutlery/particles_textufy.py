@@ -13,7 +13,7 @@ import math
 import datetime
 import numpy as np
 from loguru import logger
-from astrocutlery.utensils import round_to_n, remap, configure_loguru, is_within_box
+from astrocutlery.utensils import round_to_n, remap, configure_loguru, is_within_box, get_ordinal_suffix
 
 # file_type_token: "PHANTOM", "SHAMROCK", "NUMPY", "TXT", "HDF5", "HDF5-SANHAN" or "HDF5-GOY"
 def prepare_particles_data(source_file, file_type_token):
@@ -314,10 +314,15 @@ def particles_export(data, actual_count, step, dimensions, kept_dimensions, minm
 					
 		# Log row sometimes
 		if (j % max(1, int(round(actual_count/nb_logs))) == 0):
+			th_nb = str(j + 1) + get_ordinal_suffix(j + 1)
+			content = ""
+			
 			if (zoombox and not is_in_box):
-				logger.bind(color="fg #3FB").trace(str(j) + "th remapped row is: out of zoombox")
+				content = "out of zoombox"
 			else:
-				logger.bind(color="fg #3FB").trace(str(j) + "th remapped row is: " + row.lstrip('\n'))
+				content = row.lstrip('\n')
+			
+			logger.bind(color="fg #3FB").trace(th_nb + " remapped row is: " + content)
 
 		# Write to file
 		if (not zoombox or (zoombox and is_in_box)):

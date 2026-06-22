@@ -169,8 +169,114 @@ def textufy_valentin_goy_103_anim_test():
 		# Export
 		particles_export(data, actual_count, step, dimensions, kept_dimensions, minmaxs, file_type_token, nb_logs, dest_path, dest_file_name, zoombox=False)
 	
+def textufy_valentin_goy_619_anim_part(which_part):
+	import h5py
+
+	source_file = ""
+	start_index = 0
+	end_index = 0
+	if (which_part == 1):
+		source_file = "./data/valentingoy/619-frames/Magnetic_clumping_4096_BeforeGrowth_110.hdf5"
+		start_index = 1
+		end_index = 110
+	elif (which_part == 2):
+		source_file = "./data/valentingoy/619-frames/Magnetic_clumping_4096_WithGrowth_509.hdf5"
+		start_index = 111
+		end_index = 619
+	else:
+		logger.error("Invalid value for which_part argument: " + which_part)
+
+	with h5py.File(source_file, 'r') as hdf:
+		# Afficher la structure du fichier
+		hdf.visit(print)
+
+		# Lire des données spécifiques
+		x = hdf['Alex/x'][:,:] #2D array
+		rho = hdf['Alex/rho'][:,:] #2D array
+		rhod = hdf['Alex/rhod'][:,:] #2D array
+		vx = hdf['Alex/vx'][:,:] #2D array
+		vz = hdf['Alex/vz'][:,:] #2D array
+		vy = hdf['Alex/vy'][:,:] #2D array
+		vdx = hdf['Alex/vdx'][:,:] #2D array
+		vdz = hdf['Alex/vdz'][:,:] #2D array
+		vdy = hdf['Alex/vdy'][:,:] #2D array
+		Bx = hdf['Alex/Bx'][:,:] #2D array
+		By = hdf['Alex/By'][:,:] #2D array
+		Bz = hdf['Alex/Bz'][:,:] #2D array
+		sd = hdf['Alex/sd'][:,:] #2D array
+		group = hdf['Alex']
+
+		sd_max = hdf['Alex/sd_max'][:] #1D array
+		time = hdf['Alex/time'][:] #1D array
+
+		rho_0 = group.attrs['rho_0'] #Scalar
+		rhod_0 = group.attrs['rhod_0'] #Scalar
+
+		print(sd.shape)
+		print(sd[sd.shape[0] - 1])
+		# data = sd[i]
+
+		# Scan time intervals
+		# scan_time_array(time)
+
+	# Start main loop to extract animation frames
+	configure_loguru()
+	testing_density = 1/10
+	dest_path = "valentingoy/619-frames/"
+	file_prefix = "allsd"
+	file_type_token = "HDF5"
+	dimensions = [
+		["x", "linear", "HQ"],
+		["rho", "log", "LQ"],
+		["rhod", "log", "LQ"],
+		["vx", "linear", "LQ"],
+		["vy", "linear", "LQ"],
+		["vz", "linear", "LQ"],
+		["vdx", "linear", "LQ"],
+		["vdy", "linear", "LQ"],
+		["vdz", "linear", "LQ"],
+		["Bx", "linear", "LQ"],
+		["By", "linear", "LQ"],
+		["Bz", "linear", "LQ"],
+		["sd", "log", "HQ"]
+	]
+	kept_dimensions = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+	minmaxs = [ [0, 5e16], [-24, -15], [-26.5, -15], [-6e5, 6e5], [-6e5, 6e5], [-6e5, 6e5], [-6e5, 6e5], [-6e5, 6e5], [-6e5, 6e5], [0, 3.4e-4], [-1e-4, 1e-4], [-1e-4, 1e-4], [-4, 0] ]
+	nb_logs = 6
+	
+	# print("TIME")
+	# print(time)
+
+	size = time.shape[0]
+
+	# print("SIZE")
+	# print(size)
+	for i in range(start_index, end_index + 1):
+		data_index = i - start_index
+		print(data_index)
+		columns = [x[data_index], rho[data_index], rhod[data_index], vx[data_index], vy[data_index], vz[data_index], vdx[data_index], vdy[data_index], vdz[data_index], Bx[data_index], By[data_index], Bz[data_index], sd[data_index]]
+
+		data = np.column_stack(columns)
+
+		# Compact version of particles_textufy with this input data loop on 2D source data array
+		dest_file_name = "valentingoy-" + file_prefix + "-" + prepend_zeros(str(i), 3)
+		dest_file_name = enrich_output_file_name(dest_file_name, testing_density)
+		loop_vars = compute_loop_variables(data, testing_density)
+		step = loop_vars[0]
+		actual_count = loop_vars[1]
+
+		# Scan
+		# particles_scan(data, actual_count, step, dimensions, file_type_token, nb_logs)
+
+		# Export
+		particles_export(data, actual_count, step, dimensions, kept_dimensions, minmaxs, file_type_token, nb_logs, dest_path, dest_file_name, zoombox=False)
+	
+def textufy_valentin_goy_619_anim():
+	textufy_valentin_goy_619_anim_part(1)
+	textufy_valentin_goy_619_anim_part(2)
 
 if __name__ == "__main__":
 	# textufy_valentin_goy_test_clumping()
 	# textufy_valentin_goy_hd_test_clumping()
-	textufy_valentin_goy_103_anim_test()
+	# textufy_valentin_goy_103_anim_test()
+	textufy_valentin_goy_619_anim()
