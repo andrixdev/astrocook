@@ -221,7 +221,7 @@ def textufy_valentin_goy_619_anim_part(which_part):
 
 	# Start main loop to extract animation frames
 	configure_loguru()
-	testing_density = 1/10
+	testing_density = 1/1
 	dest_path = "valentingoy/619-frames/"
 	file_prefix = "allsd"
 	file_type_token = "HDF5"
@@ -246,11 +246,15 @@ def textufy_valentin_goy_619_anim_part(which_part):
 	
 	# print("TIME")
 	# print(time)
-
-	size = time.shape[0]
-
+	
 	# print("SIZE")
 	# print(size)
+
+	# size = time.shape[0]
+
+	# for i in range(0, 777):
+	# 	print(str(sd_max[i]))
+
 	for i in range(start_index, end_index + 1):
 		data_index = i - start_index
 		print(data_index)
@@ -269,7 +273,7 @@ def textufy_valentin_goy_619_anim_part(which_part):
 		# particles_scan(data, actual_count, step, dimensions, file_type_token, nb_logs)
 
 		# Export
-		particles_export(data, actual_count, step, dimensions, kept_dimensions, minmaxs, file_type_token, nb_logs, dest_path, dest_file_name, zoombox=False)
+		# particles_export(data, actual_count, step, dimensions, kept_dimensions, minmaxs, file_type_token, nb_logs, dest_path, dest_file_name, zoombox=False)
 	
 def textufy_valentin_goy_619_anim():
 	textufy_valentin_goy_619_anim_part(1)
