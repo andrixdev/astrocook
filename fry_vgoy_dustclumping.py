@@ -242,7 +242,7 @@ def textufy_valentin_goy_619_anim_part(which_part):
 	]
 	kept_dimensions = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
 	minmaxs = [ [0, 5e16], [-24, -15], [-26.5, -15], [-6e5, 6e5], [-6e5, 6e5], [-6e5, 6e5], [-6e5, 6e5], [-6e5, 6e5], [-6e5, 6e5], [0, 3.4e-4], [-1e-4, 1e-4], [-1e-4, 1e-4], [-4, 0] ]
-	nb_logs = 6
+	nb_logs = 3
 	
 	# print("TIME")
 	# print(time)
@@ -252,12 +252,14 @@ def textufy_valentin_goy_619_anim_part(which_part):
 
 	# size = time.shape[0]
 
+	# Print value in console to paste in txt file
 	# for i in range(0, 777):
-	# 	print(str(sd_max[i]))
+	# 	print(str(time[i]))
+	# 	# print(str(sd_max[i]))
 
 	for i in range(start_index, end_index + 1):
 		data_index = i - start_index
-		print(data_index)
+		# print(data_index)
 		columns = [x[data_index], rho[data_index], rhod[data_index], vx[data_index], vy[data_index], vz[data_index], vdx[data_index], vdy[data_index], vdz[data_index], Bx[data_index], By[data_index], Bz[data_index], sd[data_index]]
 
 		data = np.column_stack(columns)
@@ -276,8 +278,8 @@ def textufy_valentin_goy_619_anim_part(which_part):
 		# particles_export(data, actual_count, step, dimensions, kept_dimensions, minmaxs, file_type_token, nb_logs, dest_path, dest_file_name, zoombox=False)
 	
 def textufy_valentin_goy_619_anim():
-	textufy_valentin_goy_619_anim_part(1)
-	textufy_valentin_goy_619_anim_part(2)
+	# textufy_valentin_goy_619_anim_part(1)
+	# textufy_valentin_goy_619_anim_part(2)
 
 if __name__ == "__main__":
 	# textufy_valentin_goy_test_clumping()
