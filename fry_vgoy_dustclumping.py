@@ -87,6 +87,19 @@ def scan_time_array(time):
 	
 	print(log)
 
+def update_minmaxs_of_minmaxs(minmaxs_of_minmaxs, minmaxs):
+
+	for d in range(0, len(minmaxs_of_minmaxs)):
+		# Update min value
+		if (minmaxs[d][0] < minmaxs_of_minmaxs[d][0]):
+			minmaxs_of_minmaxs[d][0] = minmaxs[d][0]
+			
+		# Update max value
+		if (minmaxs[d][1] > minmaxs_of_minmaxs[d][1]):
+			minmaxs_of_minmaxs[d][1] = minmaxs[d][1]
+
+	return minmaxs_of_minmaxs
+
 def textufy_valentin_goy_103_anim_test():
 	import h5py
 
@@ -169,20 +182,28 @@ def textufy_valentin_goy_103_anim_test():
 		# Export
 		particles_export(data, actual_count, step, dimensions, kept_dimensions, minmaxs, file_type_token, nb_logs, dest_path, dest_file_name, zoombox=False)
 	
-def textufy_valentin_goy_619_anim_part(which_part):
+def textufy_valentin_goy_full_anim_part_version(which_part, which_version):
 	import h5py
 
 	source_file = ""
 	start_index = 0
 	end_index = 0
-	if (which_part == 1):
+	if (which_part == 1 and which_version == 1):
 		source_file = "./data/valentingoy/619-frames/Magnetic_clumping_4096_BeforeGrowth_110.hdf5"
 		start_index = 1
 		end_index = 110
-	elif (which_part == 2):
+	elif (which_part == 2 and which_version == 1):
 		source_file = "./data/valentingoy/619-frames/Magnetic_clumping_4096_WithGrowth_509.hdf5"
 		start_index = 111
 		end_index = 619
+	elif (which_part == 1 and which_version == 2):
+		source_file = "./data/valentingoy/1987-frames/Magnetic_clumping_4096_BeforeGrowth_625.hdf5"
+		start_index = 1
+		end_index = 625
+	elif (which_part == 2 and which_version == 2):
+		source_file = "./data/valentingoy/1987-frames/Magnetic_clumping_4096_WithGrowth_1362.hdf5"
+		start_index = 626
+		end_index = 626 + 1362 - 1
 	else:
 		logger.error("Invalid value for which_part argument: " + which_part)
 
@@ -221,8 +242,8 @@ def textufy_valentin_goy_619_anim_part(which_part):
 
 	# Start main loop to extract animation frames
 	configure_loguru()
-	testing_density = 1/1
-	dest_path = "valentingoy/619-frames/"
+	testing_density = 1/98
+	dest_path = "valentingoy/" + ("619" if which_version == 1 else "1987") + "-frames/"
 	file_prefix = "allsd"
 	file_type_token = "HDF5"
 	dimensions = [
@@ -241,21 +262,32 @@ def textufy_valentin_goy_619_anim_part(which_part):
 		["sd", "log", "HQ"]
 	]
 	kept_dimensions = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
-	minmaxs = [ [0, 5e16], [-24, -15], [-26.5, -15], [-6e5, 6e5], [-6e5, 6e5], [-6e5, 6e5], [-6e5, 6e5], [-6e5, 6e5], [-6e5, 6e5], [0, 3.4e-4], [-1e-4, 1e-4], [-1e-4, 1e-4], [-4, 0] ]
+
+	minmaxs = []
+	if (which_version == 1):
+		minmaxs = [ [0, 5e16], [-24, -15], [-26.5, -15], [-6e5, 6e5], [-6e5, 6e5], [-6e5, 6e5], [-6e5, 6e5], [-6e5, 6e5], [-6e5, 6e5], [0, 3.4e-4], [-1e-4, 1e-4], [-1e-4, 1e-4], [-4, 0] ]
+	elif (which_version == 2):
+		minmaxs = [ [0, 4e16], [-24, -15], [-26.5, -15], [-6e5, 6e5], [-6e5, 6e5], [-6e5, 6e5], [-6e5, 6e5], [-6e5, 6e5], [-6e5, 6e5], [0, 2.6e-4], [-2.2e-4, 2.2e-4], [-2.2e-4, 2.2e-4], [-4, 0] ]
+	else:
+		logger.error("Incorrect value for which_version: " + str(which_version))
+
 	nb_logs = 3
 	
 	# print("TIME")
 	# print(time)
+
+	# size = time.shape[0]
 	
 	# print("SIZE")
 	# print(size)
-
-	# size = time.shape[0]
 
 	# Print value in console to paste in txt file
 	# for i in range(0, 777):
 	# 	print(str(time[i]))
 	# 	# print(str(sd_max[i]))
+
+	# Prepare animation global scan
+	minmaxs_of_minmaxs = [[float("inf"), float("-inf")] for _ in range(len(dimensions))]
 
 	for i in range(start_index, end_index + 1):
 		data_index = i - start_index
@@ -272,17 +304,32 @@ def textufy_valentin_goy_619_anim_part(which_part):
 		actual_count = loop_vars[1]
 
 		# Scan
-		# particles_scan(data, actual_count, step, dimensions, file_type_token, nb_logs)
+		minmaxs = particles_scan(data, actual_count, step, dimensions, file_type_token, nb_logs)
+		
+		# Update minmaxs of minmaxs with latest minmax
+		minmaxs_of_minmaxs = update_minmaxs_of_minmaxs(minmaxs_of_minmaxs, minmaxs)
 
 		# Export
 		# particles_export(data, actual_count, step, dimensions, kept_dimensions, minmaxs, file_type_token, nb_logs, dest_path, dest_file_name, zoombox=False)
+
+
+	# Print final minmax
+	logger.info("Logging overall scanned minima and maxima...")
+	for d in range(len(dimensions)):
+		logger.bind(color="fg #DD5").trace("Overall Min value for " + str(dimensions[d][0]) + " is: " + str(minmaxs_of_minmaxs[d][0]))
+		logger.bind(color="fg #DD5").trace("Overall Max value for " + str(dimensions[d][0]) + " is: " + str(minmaxs_of_minmaxs[d][1]))
 	
 def textufy_valentin_goy_619_anim():
-	# textufy_valentin_goy_619_anim_part(1)
-	# textufy_valentin_goy_619_anim_part(2)
+	textufy_valentin_goy_full_anim_part_version(1, 1)
+	# textufy_valentin_goy_full_anim_part_version(2, 1)
+
+def textufy_valentin_goy_1987_anim():
+	# textufy_valentin_goy_full_anim_part_version(1, 2)
+	textufy_valentin_goy_full_anim_part_version(2, 2)
 
 if __name__ == "__main__":
 	# textufy_valentin_goy_test_clumping()
 	# textufy_valentin_goy_hd_test_clumping()
 	# textufy_valentin_goy_103_anim_test()
-	textufy_valentin_goy_619_anim()
+	# textufy_valentin_goy_619_anim()
+	textufy_valentin_goy_1987_anim()

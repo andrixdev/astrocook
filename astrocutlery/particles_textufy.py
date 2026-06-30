@@ -235,6 +235,9 @@ def particles_scan(data, actual_count, step, dimensions, file_type_token, nb_log
 	delta = end_time.timestamp() - start_time.timestamp()
 	logger.success("Scanned data in: " + str(round(delta, 2)) + " seconds.")
 
+	# Return minmaxs
+	return real_minmaxs
+
 def particles_export(data, actual_count, step, dimensions, kept_dimensions, minmaxs, file_type_token, nb_logs, dest_path, dest_file_name, zoombox=False):
 	# Log start info
 	logger.info("Exporting: remapping data and writing to file...")
