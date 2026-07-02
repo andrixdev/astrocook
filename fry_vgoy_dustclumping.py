@@ -182,6 +182,10 @@ def textufy_valentin_goy_103_anim_test():
 		# Export
 		particles_export(data, actual_count, step, dimensions, kept_dimensions, minmaxs, file_type_token, nb_logs, dest_path, dest_file_name, zoombox=False)
 	
+# Version 1 -> first part of animation
+# Version 2 -> second part of animation
+# Version 98 -> export .txt file with time
+# Version 99 -> export .txt file with sd_max
 def textufy_valentin_goy_full_anim_part_version(which_part, which_version):
 	import h5py
 
@@ -204,8 +208,12 @@ def textufy_valentin_goy_full_anim_part_version(which_part, which_version):
 		source_file = "./data/valentingoy/1987-frames/Magnetic_clumping_4096_WithGrowth_1362.hdf5"
 		start_index = 626
 		end_index = 626 + 1362 - 1
-	else:
-		logger.error("Invalid value for which_part argument: " + which_part)
+	elif (which_part == 1 and (which_version == 98 or which_version == 99)): # It's actually still version 2 but we're just extracting time
+		source_file = "./data/valentingoy/1987-frames/Magnetic_clumping_4096_BeforeGrowth_625.hdf5"
+		end_index = 625
+	elif (which_part == 2 and (which_version == 98 or which_version == 99)): # It's actually still version 2 but we're just extracting sd_max
+		source_file = "./data/valentingoy/1987-frames/Magnetic_clumping_4096_WithGrowth_1362.hdf5"
+		end_index = 1362
 
 	with h5py.File(source_file, 'r') as hdf:
 		# Afficher la structure du fichier
@@ -242,7 +250,7 @@ def textufy_valentin_goy_full_anim_part_version(which_part, which_version):
 
 	# Start main loop to extract animation frames
 	configure_loguru()
-	testing_density = 1/98
+	testing_density = 1/1
 	dest_path = "valentingoy/" + ("619" if which_version == 1 else "1987") + "-frames/"
 	file_prefix = "allsd"
 	file_type_token = "HDF5"
@@ -269,22 +277,28 @@ def textufy_valentin_goy_full_anim_part_version(which_part, which_version):
 	elif (which_version == 2):
 		minmaxs = [ [0, 4e16], [-24, -15], [-26.5, -15], [-6e5, 6e5], [-6e5, 6e5], [-6e5, 6e5], [-6e5, 6e5], [-6e5, 6e5], [-6e5, 6e5], [0, 2.6e-4], [-2.2e-4, 2.2e-4], [-2.2e-4, 2.2e-4], [-4, 0] ]
 	else:
-		logger.error("Incorrect value for which_version: " + str(which_version))
+		logger.info("Not generating any minmaxs for this value of which_version: " + str(which_version))
 
 	nb_logs = 3
 	
 	# print("TIME")
 	# print(time)
-
 	# size = time.shape[0]
-	
 	# print("SIZE")
 	# print(size)
 
-	# Print value in console to paste in txt file
-	# for i in range(0, 777):
-	# 	print(str(time[i]))
-	# 	# print(str(sd_max[i]))
+	# Print value in console to then paste in txt file
+	if (which_version == 98): # It's actually still version 2 but we're just extracting time
+		for i in range(0, end_index):
+			print(str(time[i]))
+
+		return
+	
+	elif (which_version == 99): # It's actually still version 2 but we're just extracting sd_max
+		for i in range(0, end_index):
+			print(str(sd_max[i]))
+
+		return
 
 	# Prepare animation global scan
 	minmaxs_of_minmaxs = [[float("inf"), float("-inf")] for _ in range(len(dimensions))]
@@ -304,14 +318,13 @@ def textufy_valentin_goy_full_anim_part_version(which_part, which_version):
 		actual_count = loop_vars[1]
 
 		# Scan
-		minmaxs = particles_scan(data, actual_count, step, dimensions, file_type_token, nb_logs)
+		# minmaxs = particles_scan(data, actual_count, step, dimensions, file_type_token, nb_logs)
 		
 		# Update minmaxs of minmaxs with latest minmax
-		minmaxs_of_minmaxs = update_minmaxs_of_minmaxs(minmaxs_of_minmaxs, minmaxs)
+		# minmaxs_of_minmaxs = update_minmaxs_of_minmaxs(minmaxs_of_minmaxs, minmaxs)
 
 		# Export
 		# particles_export(data, actual_count, step, dimensions, kept_dimensions, minmaxs, file_type_token, nb_logs, dest_path, dest_file_name, zoombox=False)
-
 
 	# Print final minmax
 	logger.info("Logging overall scanned minima and maxima...")
@@ -327,9 +340,19 @@ def textufy_valentin_goy_1987_anim():
 	# textufy_valentin_goy_full_anim_part_version(1, 2)
 	textufy_valentin_goy_full_anim_part_version(2, 2)
 
+def print_valentin_goy_time_txt():
+	# textufy_valentin_goy_full_anim_part_version(1, 98)
+	textufy_valentin_goy_full_anim_part_version(2, 98)
+
+def print_valentin_goy_sd_max_txt():
+	# textufy_valentin_goy_full_anim_part_version(1, 99)
+	textufy_valentin_goy_full_anim_part_version(2, 99)
+
 if __name__ == "__main__":
 	# textufy_valentin_goy_test_clumping()
 	# textufy_valentin_goy_hd_test_clumping()
 	# textufy_valentin_goy_103_anim_test()
 	# textufy_valentin_goy_619_anim()
-	textufy_valentin_goy_1987_anim()
+	# textufy_valentin_goy_1987_anim()
+	# print_valentin_goy_time_txt()
+	print_valentin_goy_sd_max_txt()
