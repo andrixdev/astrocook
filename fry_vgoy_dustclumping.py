@@ -311,7 +311,7 @@ def textufy_valentin_goy_full_anim_part_version(which_part, which_version):
 		data = np.column_stack(columns)
 
 		# Compact version of particles_textufy with this input data loop on 2D source data array
-		dest_file_name = "valentingoy-" + file_prefix + "-" + prepend_zeros(str(i), 3)
+		dest_file_name = "valentingoy-" + file_prefix + "-" + prepend_zeros(str(i), 4)
 		dest_file_name = enrich_output_file_name(dest_file_name, testing_density)
 		loop_vars = compute_loop_variables(data, testing_density)
 		step = loop_vars[0]
@@ -324,7 +324,7 @@ def textufy_valentin_goy_full_anim_part_version(which_part, which_version):
 		# minmaxs_of_minmaxs = update_minmaxs_of_minmaxs(minmaxs_of_minmaxs, minmaxs)
 
 		# Export
-		# particles_export(data, actual_count, step, dimensions, kept_dimensions, minmaxs, file_type_token, nb_logs, dest_path, dest_file_name, zoombox=False)
+		particles_export(data, actual_count, step, dimensions, kept_dimensions, minmaxs, file_type_token, nb_logs, dest_path, dest_file_name, zoombox=False)
 
 	# Print final minmax
 	logger.info("Logging overall scanned minima and maxima...")
@@ -353,6 +353,6 @@ if __name__ == "__main__":
 	# textufy_valentin_goy_hd_test_clumping()
 	# textufy_valentin_goy_103_anim_test()
 	# textufy_valentin_goy_619_anim()
-	# textufy_valentin_goy_1987_anim()
+	textufy_valentin_goy_1987_anim()
 	# print_valentin_goy_time_txt()
-	print_valentin_goy_sd_max_txt()
+	# print_valentin_goy_sd_max_txt()
