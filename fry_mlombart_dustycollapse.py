@@ -60,6 +60,43 @@ def textufy_maxime_lombart_zoomed_test_collapse(is_test=False):
     
     particles_textufy(source_file, file_type_token, dest_path, dest_file_name, dimensions, kept_dimensions, minmaxs, testing_density, nb_logs, is_scanning, is_exporting, zoombox)
 
+def textufy_maxime_lombart_collapse(is_test=False):
+    dimensions = [
+        ["x", "linear", "HQ"],
+        ["y", "linear", "HQ"],
+        ["z", "linear", "HQ"],
+        ["rho", "log", "LQ"],
+        ["vx", "linear", "LQ"],
+        ["vy", "linear", "LQ"],
+        ["vz", "linear", "LQ"],
+        ["size", "log", "LQ"],
+        ["vdriftx", "linear", "LQ"],
+        ["vdrifty", "linear", "LQ"],
+        ["vdriftz", "linear", "LQ"],
+        ["Bx", "linear", "LQ"],
+        ["By", "linear", "LQ"],
+        ["Bz", "linear", "LQ"],
+        ["currentx", "linear", "LQ"],
+        ["currenty", "linear", "LQ"],
+        ["currentz", "linear", "LQ"]
+    ]
+    minmaxs = [ [-4000, 4000], [-4000, 4000], [-4000, 4000], [-20, -11], [-1e5, 1e5], [-1e5, 1e5], [-1e5, 1e5], [-5.5, -2], [-1e4, 1e4], [-1e4, 1e4], [-1e4, 1e4], [-2E-2, 2E-2], [-2E-2, 2E-2], [-2E-2, 2E-2], [-2e10, 2e10], [-2e10, 2e10], [-2e10, 2e10] ]
+
+    kept_dimensions = [ 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 ]
+    file_prefix = "all"
+    source_file = "./data/maximelombart/1-frame/data_ramses_position_rhogas_vgas_speak_vspeak_bfield_current.npy"
+    file_type_token = "NUMPY"
+    dest_path = "maximelombart/1-frame/"
+    dest_file_name = "maximelombart-" + file_prefix + ("-testing" if is_test else "")
+    testing_density = 1/1
+    nb_logs = 15
+    is_scanning = False
+    is_exporting = True
+
+    particles_textufy(source_file, file_type_token, dest_path, dest_file_name, dimensions, kept_dimensions, minmaxs, testing_density, nb_logs, is_scanning, is_exporting)
+
+     
 if __name__ == "__main__":
     # textufy_maxime_lombart_test_collapse()
-    textufy_maxime_lombart_zoomed_test_collapse()
+    # textufy_maxime_lombart_zoomed_test_collapse()
+    textufy_maxime_lombart_collapse()

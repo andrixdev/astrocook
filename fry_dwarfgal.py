@@ -20,7 +20,7 @@ def textufy_dwarfgal_xyz(is_test=False):
 	start_index = 2047
 	end_index = 2546
 
-	testing_density = 1/11 # 1/1 is full rendering
+	testing_density = 1/3 # 1/1 is full rendering
 	nb_logs = 1
 	is_scanning = False
 	is_exporting = True
