@@ -7,7 +7,7 @@
 from loguru import logger
 import numpy as np
 from astrocutlery import particles_textufy
-from astrocutlery.utensils import configure_loguru, prepend_zeros
+from astrocutlery.utensils import configure_loguru, prepend_zeros, update_minmaxs_of_minmaxs, print_minmaxs_of_minmaxs
 from astrocutlery.particles_textufy import compute_loop_variables, enrich_output_file_name, particles_scan, particles_export
 
 def textufy_valentin_goy_test_clumping(is_test=False):
@@ -86,19 +86,6 @@ def scan_time_array(time):
 		log += ", "
 	
 	print(log)
-
-def update_minmaxs_of_minmaxs(minmaxs_of_minmaxs, minmaxs):
-
-	for d in range(0, len(minmaxs_of_minmaxs)):
-		# Update min value
-		if (minmaxs[d][0] < minmaxs_of_minmaxs[d][0]):
-			minmaxs_of_minmaxs[d][0] = minmaxs[d][0]
-			
-		# Update max value
-		if (minmaxs[d][1] > minmaxs_of_minmaxs[d][1]):
-			minmaxs_of_minmaxs[d][1] = minmaxs[d][1]
-
-	return minmaxs_of_minmaxs
 
 def textufy_valentin_goy_103_anim_test():
 	import h5py
@@ -327,10 +314,7 @@ def textufy_valentin_goy_full_anim_part_version(which_part, which_version):
 		particles_export(data, actual_count, step, dimensions, kept_dimensions, minmaxs, file_type_token, nb_logs, dest_path, dest_file_name, zoombox=False)
 
 	# Print final minmax
-	logger.info("Logging overall scanned minima and maxima...")
-	for d in range(len(dimensions)):
-		logger.bind(color="fg #DD5").trace("Overall Min value for " + str(dimensions[d][0]) + " is: " + str(minmaxs_of_minmaxs[d][0]))
-		logger.bind(color="fg #DD5").trace("Overall Max value for " + str(dimensions[d][0]) + " is: " + str(minmaxs_of_minmaxs[d][1]))
+	print_minmaxs_of_minmaxs(minmaxs_of_minmaxs, dimensions)
 	
 def textufy_valentin_goy_619_anim():
 	textufy_valentin_goy_full_anim_part_version(1, 1)

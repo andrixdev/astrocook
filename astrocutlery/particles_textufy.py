@@ -367,11 +367,18 @@ def particles_textufy (source_file, file_type_token, dest_path, dest_file_name, 
 	loop_vars = compute_loop_variables(data, testing_density)
 	step = loop_vars[0]
 	actual_count = loop_vars[1]
+
+	# Prepare minmaxs
+	scanned_minmaxs = []
 	
 	# LOOP 1: scan
 	if (is_scanning):
-		particles_scan(data, actual_count, step, dimensions, file_type_token, nb_logs)
+		scanned_minmaxs = particles_scan(data, actual_count, step, dimensions, file_type_token, nb_logs)
 	
 	# LOOP 2: export (remap & write)
 	if (is_exporting):
 		particles_export(data, actual_count, step, dimensions, kept_dimensions, minmaxs, file_type_token, nb_logs, dest_path, dest_file_name, zoombox=False)
+
+	# Return minmaxs for potential scanning of entire animations (calling particles_textufy in batches)
+	return scanned_minmaxs # empty array in case of only exporting
+	

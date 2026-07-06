@@ -84,3 +84,25 @@ def get_ordinal_suffix(number: int) -> str:
     else:
         return "th"
     
+def update_minmaxs_of_minmaxs(minmaxs_of_minmaxs, minmaxs):
+
+	if not minmaxs:
+		return minmaxs_of_minmaxs
+	
+	else:
+		for d in range(0, len(minmaxs_of_minmaxs)):
+			# Update min value
+			if (minmaxs[d][0] < minmaxs_of_minmaxs[d][0]):
+				minmaxs_of_minmaxs[d][0] = minmaxs[d][0]
+				
+			# Update max value
+			if (minmaxs[d][1] > minmaxs_of_minmaxs[d][1]):
+				minmaxs_of_minmaxs[d][1] = minmaxs[d][1]
+
+	return minmaxs_of_minmaxs
+
+def print_minmaxs_of_minmaxs(minmaxs_of_minmaxs, dimensions):
+    logger.info("Logging overall scanned minima and maxima...")
+    for d in range(len(dimensions)):
+        logger.bind(color="fg #DD5").trace("Overall Min value for " + str(dimensions[d][0]) + " is: " + str(minmaxs_of_minmaxs[d][0]))
+        logger.bind(color="fg #DD5").trace("Overall Max value for " + str(dimensions[d][0]) + " is: " + str(minmaxs_of_minmaxs[d][1]))
