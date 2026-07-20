@@ -18,11 +18,12 @@ def klodufy_yohandubois_galaxy_rho (is_test=False):
     quality = "high"
     dest_path = "yohandubois/1-frame/"
     dest_file_name = "yohandubois-galaxy-rho-" + str(size) + ("-testing" if is_test else "")
-    testing_density = 1/1 # 1/1 is full rendering
+    testing_density = 1/1 if not is_test else 1/10 # 1/1 is full rendering
     nb_logs = 20
     is_scanning = True
+    is_exporting = True
     
-    klodufy (source_file, file_type_token, size, dimensions, minmaxs, quality, dest_path, dest_file_name, testing_density, nb_logs, is_scanning)
+    klodufy (source_file, file_type_token, size, dimensions, minmaxs, quality, dest_path, dest_file_name, testing_density, nb_logs, is_scanning, is_exporting)
 
 def klodufy_yohandubois_galaxy_bz(is_test=False):
     dimensions = [ ["bz", "linear"] ]
@@ -35,11 +36,12 @@ def klodufy_yohandubois_galaxy_bz(is_test=False):
     quality = "high"
     dest_path = "yohandubois/1-frame/"
     dest_file_name = "yohandubois-galaxy-bz-" + str(size) + ("-testing" if is_test else "")
-    testing_density = 1/1 # 1/1 is full rendering
+    testing_density = 1/1 if not is_test else 1/10 # 1/1 is full rendering
     nb_logs = 20
     is_scanning = True
+    is_exporting = True
     
-    klodufy(source_file, file_type_token, size, dimensions, minmaxs, quality, dest_path, dest_file_name, testing_density, nb_logs, is_scanning)
+    klodufy(source_file, file_type_token, size, dimensions, minmaxs, quality, dest_path, dest_file_name, testing_density, nb_logs, is_scanning, is_exporting)
 
 # if __name__ == "__main__":
 #     klodufy_yohandubois_galaxy_rho()

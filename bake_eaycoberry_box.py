@@ -18,11 +18,12 @@ def klodufy_emmaaycoberry_box (is_test=False):
     quality = "high"
     dest_path = "emmaaycoberry/1-frame/"
     dest_file_name = "emmaaycoberry-box-rho-" + str(size) + ("-testing" if is_test else "")
-    testing_density = 1/2 # 1/1 is full rendering
+    testing_density = 1/2 if not is_test else 1/12 # 1/1 is full rendering
     nb_logs = 20
     is_scanning = True
+    is_exporting = True
     
-    klodufy(source_file, file_type_token, size, dimensions, minmaxs, quality, dest_path, dest_file_name, testing_density, nb_logs, is_scanning)
+    klodufy(source_file, file_type_token, size, dimensions, minmaxs, quality, dest_path, dest_file_name, testing_density, nb_logs, is_scanning, is_exporting)
 
 if __name__ == "__main__":
     klodufy_emmaaycoberry_box()

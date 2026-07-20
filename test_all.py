@@ -4,7 +4,6 @@
 
 # Bake imports (klodus)
 from bake_eaycoberry_box import klodufy_emmaaycoberry_box
-from bake_fthompson_starcluster import klodufy_fredthompson_starcluster
 from bake_ydubois_galaxy import klodufy_yohandubois_galaxy_rho, klodufy_yohandubois_galaxy_bz
 
 # Fry imports (particles)
@@ -18,10 +17,9 @@ from fry_shan_galaxy_cluster import textufy_san_han_galaxy_cluster_xyzdensitytem
 from fry_vgoy_dustclumping import textufy_valentin_goy_test_clumping, textufy_valentin_goy_hd_test_clumping
 
 # Klodus (bake)
-# klodufy_emmaaycoberry_box(True) # OK
-# klodufy_fredthompson_starcluster(True) # NOK (see data format)
-# klodufy_yohandubois_galaxy_rho(True) #OK
-# klodufy_yohandubois_galaxy_bz(True) #OK
+klodufy_emmaaycoberry_box(True) # OK
+klodufy_yohandubois_galaxy_rho(True) #OK
+klodufy_yohandubois_galaxy_bz(True) #OK
 
 # # Particles (fry) - Cheonsu Kang
 # textufy_cheonsukang_bigbox_xyzrho(True) #NOK negative values log
@@ -30,7 +28,7 @@ from fry_vgoy_dustclumping import textufy_valentin_goy_test_clumping, textufy_va
 # # Particles (fry) - Fred Thompson
 # textufy_fred_thompson_starcluster_gas_xyzrho(True) #OK
 # textufy_fred_thompson_starcluster_stars_xyzmass(True) #OK
-textufy_fred_thompson_starcluster_clusters_xyzmass(True)
+# textufy_fred_thompson_starcluster_clusters_xyzmass(True)
 
 # # Particles (fry) - Isolagal
 # textufy_isolagal_stars_xyz(True) #OK
@@ -38,11 +36,11 @@ textufy_fred_thompson_starcluster_clusters_xyzmass(True)
 
 # # Particles (fry) - James Sunseri
 # textufy_james_sunseri_gas_xyzrho(True) #OK
-textufy_james_sunseri_stars_xyzmass(True)
+# textufy_james_sunseri_stars_xyzmass(True)
 
 # # # Particles (fry) - Maxime Lombart
 # textufy_maxime_lombart_test_collapse(True) #OK
-textufy_maxime_lombart_zoomed_test_collapse(True)
+# textufy_maxime_lombart_zoomed_test_collapse(True)
 
 # # Particles (fry) - Maxime Rey
 # textufy_maxime_rey_molecularcloud_gas_xyzrho(True)  #OK
@@ -54,4 +52,4 @@ textufy_maxime_lombart_zoomed_test_collapse(True)
 
 # # Particles (fry) - Valentin Goy
 # textufy_valentin_goy_test_clumping(True) #OK
-textufy_valentin_goy_hd_test_clumping(True)
+# textufy_valentin_goy_hd_test_clumping(True)

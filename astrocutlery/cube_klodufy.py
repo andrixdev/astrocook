@@ -203,133 +203,81 @@ def prepare_data_cube (source_file, file_type_token, dimensionality):
         
         return False
 
-# Create Unity 3D texture out of data cube
-# input data cube should have implicit xyz just by the order of storage
-# order of sequence (x, y or z) does not matter as we can always rotate the cube in the final visualization
-#
-# 'dimensionality' of 1 generates a 3D texture with "R" signel channel
-# 'dimensionality' of 3 generates a 3D texture with "RGB" channels
-# 1-dimension low quality intensities are exported to 8-bit single-channel 3D-texture, TextureFormat.R8 in Unity
-# 1-dimension high quality intensities are exported to 16-bit single-channel 3D-texture, TextureFormat.R16 in Unity
-# 3-dimension low quality intensities are exported to 3 x 8-bit RGB 3D-textures, TextureFormat.RGB24 in Unity
-# 3-dimension high quality intensities are exported to 3 x 16-bit RGB 3D-textures, TextureFormat.RGB48 in Unity
-def klodufy (source_file, file_type_token, size, dimensions, minmaxs, quality, dest_path, dest_file_name, testing_density, nb_logs, is_scanning):
-    
-    # Testing mode inits
-    testing_density = min(1, testing_density) # Make sure it don't go krazy (> 1)
-    testing_value = round(1/testing_density)
-    
-    # Various inits
-    log_ratio = "all of " if testing_value == 1 else ("1 in " + str(testing_value ** 3) + " of all ")
-    dimensionality = len(dimensions)
-    
-    # Prepare output file name
-    dest_file_name = dest_file_name + ("-HQ" if quality == "high" else "-LQ")
-    dest_file_name = dest_file_name + ("" if testing_value == 1 else ("-1-in-" + str(testing_value)))
-    
-    # Hello
-    print("Starting work on data cube " + dest_file_name + "...")
-    print("type: " + file_type_token + ", size: " + str(size) + ", dimensions: " + str(dimensions) + ", minmaxs: " + str(minmaxs) + ", quality: " + quality + ", testing density: 1 in " + str(testing_value) + "³ == 1 in " + str(testing_value ** 3) + ", number of logs: " + str(nb_logs))
-    
-    # Load data cube
-    data = prepare_data_cube(source_file, file_type_token, dimensionality)
-    
-    # Prepare export file
-    destination_file = open("output/" + dest_path + dest_file_name + ".asset", "w")
-    
-    # Generate Unity header
-    base_size = data.shape[0]
-    base_count = base_size * base_size * base_size
-    actual_count = math.floor(base_count * (testing_density ** 3))
-    write_unity_header(destination_file, dest_file_name, base_size, testing_density, dimensionality, quality)
-    
-    # Check if each cell contains a scalar or an array (some have only 1 value but still in an array... with 1 value)
-    is_cell_array = not np.isscalar(data[0][0][0])
-    
-    # Track time taken
+def klodu_scan (data, log_ratio, base_count, actual_count, dimensionality, x_range, y_range, z_range, step, dimensions, is_cell_array, nb_logs):
+    print("Scanning " + log_ratio +  str(base_count) + " (== " + str(actual_count) + ") rows to determine min and max values...")
     start_time = datetime.datetime.now()
+        
+    # Init minmax array (extremal values of positions, velocities... whatever)
+    real_minmaxs = []
+    for d in range(0, dimensionality):
+        real_minmaxs.append([float("inf"), float("-inf")])
     
-    # Compute ranges (related to testing_density)
-    x_range = math.floor(data.shape[0] * testing_density)
-    y_range = math.floor(data.shape[1] * testing_density)
-    z_range = math.floor(data.shape[2] * testing_density)
-    step = math.floor(data.shape[1] / x_range)
+    i = 0
+    logs_count = 0
     
-    # LOOP 1: scan & detect extreme values
-    if (is_scanning):
-        print("Scanning " + log_ratio +  str(base_count) + " (== " + str(actual_count) + ") rows to determine min and max values...")
-        
-        # Init minmax array (extremal values of positions, velocities... whatever)
-        real_minmaxs = []
-        for d in range(0, dimensionality):
-            real_minmaxs.append([float("inf"), float("-inf")])
-        
-        i = 0
-        logs_count = 0
-        
-        for a in range(0, x_range):
-            for b in range(0, y_range):
-                for c in range(0, z_range):
-                    aa = a * step
-                    bb = b * step
-                    cc = c * step
+    for a in range(0, x_range):
+        for b in range(0, y_range):
+            for c in range(0, z_range):
+                aa = a * step
+                bb = b * step
+                cc = c * step
+                
+                log_row = ""
+                
+                for d in range(0, dimensionality):
+                    dimension_name = dimensions[d][0]
+                    dimension_mode = dimensions[d][1]
                     
-                    log_row = ""
+                    # Grab data
+                    if (not is_cell_array):
+                        val = data[aa][bb][cc]
+                    else:
+                        val = data[aa][bb][cc][d]
                     
-                    for d in range(0, dimensionality):
-                        dimension_name = dimensions[d][0]
-                        dimension_mode = dimensions[d][1]
-                        
-                        # Grab data
-                        if (not is_cell_array):
-                            val = data[aa][bb][cc]
+                    # Checking mode
+                    if (dimension_mode == "log"):
+                        if (val <= 0):
+                            val = float('-inf')
                         else:
-                            val = data[aa][bb][cc][d]
+                            val = math.log10(val)
                         
-                        # Checking mode
-                        if (dimension_mode == "log"):
-                            if (val <= 0):
-                                val = float('-inf')
-                            else:
-                                val = math.log10(val)
-                            
-                        # Rounding (5 digits just for the scan)
+                    # Rounding (5 digits just for the scan)
+                    if (val != float('-inf')):
+                        val = round_to_n(val, 5)
+                    
+                    # Update max value
+                    if (val > real_minmaxs[d][1]):
+                        real_minmaxs[d][1] = val
                         
-                        if (val != float('-inf')):
-                            val = round_to_n(val, 5)
+                    # Update min value
+                    if (val < real_minmaxs[d][0]):
+                        real_minmaxs[d][0] = val
                         
-                        # Update max value
-                        if (val > real_minmaxs[d][1]):
-                            real_minmaxs[d][1] = val
-                            
-                        # Update min value
-                        if (val < real_minmaxs[d][0]):
-                            real_minmaxs[d][0] = val
-                            
-                        # Feed row to potentially log
-                        log_row = log_row + str(val) + " "
-                        
-                    # Maybe log
-                    if ((i / actual_count) >= (logs_count / nb_logs)):
-                        logs_count += 1
-                        print(str(1 + i * step ** 3) + "th row values are: " + log_row)
-                        
-                    i += 1
+                    # Feed row to potentially log
+                    log_row = log_row + str(val) + " "
+                    
+                # Maybe log
+                if ((i / actual_count) >= (logs_count / nb_logs)):
+                    logs_count += 1
+                    print(str(1 + i * step ** 3) + "th row values are: " + log_row)
+                    
+                i += 1
 
-        # Log detected extrema
-        for d in range(0, dimensionality):
-            dimension_name = dimensions[d][0]
-            print("Min value for " + dimension_name + " is: " + str(real_minmaxs[d][0]))
-            print("Max value for " + dimension_name + " is: " + str(real_minmaxs[d][1]))
-        
-        # Log scanning time
-        mid_time = datetime.datetime.now()
-        delta = mid_time.timestamp() - start_time.timestamp()
-        print("Scanned data in: " + str(round(delta, 2)) + " seconds.")
+    # Log detected extrema
+    for d in range(0, dimensionality):
+        dimension_name = dimensions[d][0]
+        print("Min value for " + dimension_name + " is: " + str(real_minmaxs[d][0]))
+        print("Max value for " + dimension_name + " is: " + str(real_minmaxs[d][1]))
     
-    # LOOP 2: normalize so it fits max resolution
-    print("Normalizing " + log_ratio + str(data.size) + " (== " + str(actual_count) + ") values, parsing to hex and writing to Texture3D Unity file...")
-    print("Using following minmaxs array: " + str(minmaxs))
+    # Log scanning time
+    end_time = datetime.datetime.now()
+    delta = end_time.timestamp() - start_time.timestamp()
+    logger.success("Scanned data in: " + str(round(delta, 2)) + " seconds.")
+    
+def klodu_export(data, log_ratio, actual_count, dest_file_name, size, minmaxs, quality, x_range, y_range, z_range, step, dimensionality, dimensions, is_cell_array, destination_file, nb_logs):
+    logger.info("Exporting " + log_ratio + str(data.size) + " (== " + str(actual_count) + ") remapped values to Unity Texture3D file " + dest_file_name + ".asset of cube size " + str(size) + "³ = " + str(size ** 3) + "...")
+    logger.info("Using following minmaxs array: " + str(minmaxs))
+    start_time = datetime.datetime.now()
     
     max_resolution = (65536 - 1) if (quality == "high") else (256 - 1)
     
@@ -382,16 +330,73 @@ def klodufy (source_file, file_type_token, size, dimensions, minmaxs, quality, d
                     
                 j += 1
     
-    # Log normalizing time
+    # Log export time time
     end_time = datetime.datetime.now()
-    delta = end_time.timestamp() - (start_time.timestamp() if skip_scanning else mid_time.timestamp())
-    print("Parsed and wrote data to file in: " + str(round(delta, 2)) + " seconds.")
+    delta = end_time.timestamp() - start_time.timestamp()
+    logger.success("Exported data in: " + str(round(delta, 2)) + " seconds.")
     
     # Generate Unity footer
     write_unity_footer(destination_file)
     
     # Conclude
-    print("File " + dest_file_name + ".asset was created")
+    logger.success("File " + dest_file_name + ".asset was created")
+
+# Create Unity 3D texture out of data cube
+# input data cube should have implicit xyz just by the order of storage
+# order of sequence (x, y or z) does not matter as we can always rotate the cube in the final visualization
+#
+# 'dimensionality' of 1 generates a 3D texture with "R" signel channel
+# 'dimensionality' of 3 generates a 3D texture with "RGB" channels
+# 1-dimension low quality intensities are exported to 8-bit single-channel 3D-texture, TextureFormat.R8 in Unity
+# 1-dimension high quality intensities are exported to 16-bit single-channel 3D-texture, TextureFormat.R16 in Unity
+# 3-dimension low quality intensities are exported to 3 x 8-bit RGB 3D-textures, TextureFormat.RGB24 in Unity
+# 3-dimension high quality intensities are exported to 3 x 16-bit RGB 3D-textures, TextureFormat.RGB48 in Unity
+def klodufy (source_file, file_type_token, size, dimensions, minmaxs, quality, dest_path, dest_file_name, testing_density, nb_logs, is_scanning, is_exporting):
+    
+    # Testing mode inits
+    testing_density = min(1, testing_density) # Make sure it don't go krazy (> 1)
+    testing_value = round(1/testing_density)
+    
+    # Various inits
+    log_ratio = "all of " if testing_value == 1 else ("1 in " + str(testing_value ** 3) + " of all ")
+    dimensionality = len(dimensions)
+    
+    # Prepare output file name
+    dest_file_name = dest_file_name + ("-HQ" if quality == "high" else "-LQ")
+    dest_file_name = dest_file_name + ("" if testing_value == 1 else ("-1-in-" + str(testing_value)))
+    
+    # Hello
+    print("Starting work on data cube " + dest_file_name + "...")
+    print("type: " + file_type_token + ", size: " + str(size) + ", dimensions: " + str(dimensions) + ", minmaxs: " + str(minmaxs) + ", quality: " + quality + ", testing density: 1 in " + str(testing_value) + "³ == 1 in " + str(testing_value ** 3) + ", number of logs: " + str(nb_logs))
+    
+    # Load data cube
+    data = prepare_data_cube(source_file, file_type_token, dimensionality)
+    
+    # Prepare export file
+    destination_file = open("output/" + dest_path + dest_file_name + ".asset", "w")
+    
+    # Generate Unity header
+    base_size = data.shape[0]
+    base_count = base_size * base_size * base_size
+    actual_count = math.floor(base_count * (testing_density ** 3))
+    write_unity_header(destination_file, dest_file_name, base_size, testing_density, dimensionality, quality)
+    
+    # Check if each cell contains a scalar or an array (some have only 1 value but still in an array... with 1 value)
+    is_cell_array = not np.isscalar(data[0][0][0])
+    
+    # Compute ranges (related to testing_density)
+    x_range = math.floor(data.shape[0] * testing_density)
+    y_range = math.floor(data.shape[1] * testing_density)
+    z_range = math.floor(data.shape[2] * testing_density)
+    step = math.floor(data.shape[1] / x_range)
+    
+    # LOOP 1: scan & detect extreme values
+    if (is_scanning):
+        klodu_scan(data, log_ratio, base_count, actual_count, dimensionality, x_range, y_range, z_range, step, dimensions, is_cell_array, nb_logs)
+    
+    # LOOP 2: normalize so it fits max resolution
+    if (is_exporting):
+        klodu_export(data, log_ratio, actual_count, dest_file_name, size, minmaxs, quality, x_range, y_range, z_range, step, dimensionality, dimensions, is_cell_array, destination_file, nb_logs)
 
 # Count points in pointcloud to create 3D texture (voxel cloud), or add their density
 def klodufy_txt (source_file, size, source_xyz_min, source_xyz_max, quality, dest_path, dest_file_name, testing_density, nb_logs):
