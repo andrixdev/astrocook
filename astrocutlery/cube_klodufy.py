@@ -152,6 +152,20 @@ def prepare_data_cube (source_file, file_type_token, dimensionality):
         print("Data shape is " + str(data.shape) + " with a total of " + str(data.size) + " elements.")
         
         return data
+    
+    if (file_type_token == "NUMPY-MLOMBART"):
+        cube = np.load(source_file, allow_pickle=True)
+
+        data = cube.tolist()
+        pos_x = data["pos_x"]
+
+        print(data["current_x"][0][0][0])
+        
+        print("Data contains " + str(len(data)) + " cubes.")
+        print("Data cube shapes are " + str(pos_x.shape) + " with a total of " + str(pos_x.size) + " elements each.")
+        print("Total number of elements is: " + str(pos_x.size * len(data)))
+        
+        return data
         
     elif (file_type_token == "DAT"):
         f = FortranFile(os.path.expanduser(source_file), 'r')
