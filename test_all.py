@@ -31,12 +31,12 @@ klodufy_yohandubois_galaxy_bz(True) #OK
 # textufy_fred_thompson_starcluster_clusters_xyzmass(True)
 
 # # Particles (fry) - Isolagal
-# textufy_isolagal_stars_xyz(True) #OK
-# textufy_isolagal_gas_xyz(True) #OK
+textufy_isolagal_stars_xyz(True) #OK
+textufy_isolagal_gas_xyz(True) #OK
 
 # # Particles (fry) - James Sunseri
-# textufy_james_sunseri_gas_xyzrho(True) #OK
-# textufy_james_sunseri_stars_xyzmass(True)
+textufy_james_sunseri_gas_xyzrho(True) #OK
+textufy_james_sunseri_stars_xyzmass(True) #OK
 
 # # # Particles (fry) - Maxime Lombart
 # textufy_maxime_lombart_test_collapse(True) #OK

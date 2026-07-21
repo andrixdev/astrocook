@@ -238,12 +238,15 @@ def particles_scan(data, actual_count, step, dimensions, file_type_token, nb_log
 	# Return minmaxs
 	return real_minmaxs
 
-def particles_export(data, actual_count, step, dimensions, kept_dimensions, minmaxs, file_type_token, nb_logs, dest_path, dest_file_name, zoombox=False):
+def particles_export(data, testing_density, actual_count, step, dimensions, kept_dimensions, minmaxs, file_type_token, nb_logs, dest_path, dest_file_name, zoombox=False):
 	# Log start info
 	logger.info("Exporting: remapping data and writing to file...")
 	start_time = datetime.datetime.now()
 	if (zoombox):
 		logger.warning("Filtering with zoombox: " + str(zoombox) + " (x, y, z, rad)")
+
+	# Prepare output file name
+	dest_file_name = enrich_output_file_name(dest_file_name, testing_density)
 
 	# Open export destination file
 	destination_file = open("output/" + dest_path + dest_file_name + ".txt", "w")
@@ -358,10 +361,6 @@ def particles_textufy (source_file, file_type_token, dest_path, dest_file_name, 
 
 	# Load particles data
 	data = prepare_particles_data(source_file, file_type_token)
-
-	# Prepare output file name
-	dest_file_name = enrich_output_file_name(dest_file_name, testing_density)
-	logger.info("Starting work on " + dest_file_name + "...")
 	
 	# Get loop variables (step and acutal_count)
 	loop_vars = compute_loop_variables(data, testing_density)
@@ -377,7 +376,7 @@ def particles_textufy (source_file, file_type_token, dest_path, dest_file_name, 
 	
 	# LOOP 2: export (remap & write)
 	if (is_exporting):
-		particles_export(data, actual_count, step, dimensions, kept_dimensions, minmaxs, file_type_token, nb_logs, dest_path, dest_file_name, zoombox=False)
+		particles_export(data, testing_density, actual_count, step, dimensions, kept_dimensions, minmaxs, file_type_token, nb_logs, dest_path, dest_file_name, zoombox=False)
 
 	# Return minmaxs for potential scanning of entire animations (calling particles_textufy in batches)
 	return scanned_minmaxs # empty array in case of only exporting

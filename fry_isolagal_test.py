@@ -23,9 +23,9 @@ def textufy_isolagal_stars_xyz(is_test=False):
 	dest_file_name = "isolagal-stars-xyz-test" + ("-testing" if is_test else "")
 	minmaxs = [ [-40, 40], [-40, 40], [-40, 40], [-5.5, -4.5] ]
 	kept_dimensions = [1, 1, 1, 0]
-	testing_density = 1/1 # 1/1 is full rendering
+	testing_density = 1/4 if not is_test else 1/800 # 1/1 is full rendering
 	nb_logs = 15
-	is_scanning = False
+	is_scanning = True
 	is_exporting = True
 
 	particles_textufy(source_file, file_type_token, dest_path, dest_file_name, dimensions, kept_dimensions, minmaxs, testing_density, nb_logs, is_scanning, is_exporting)
@@ -45,9 +45,9 @@ def textufy_isolagal_gas_xyz(is_test=False):
 	dest_file_name = "isolagal-gas-xyz" + ("-testing" if is_test else "")
 	minmaxs = [ [-50, 50], [-50, 50], [-50, 50], [0, 1], [-8, 1] ]
 	kept_dimensions = [1, 1, 1, 1, 1]
-	testing_density = 1/1 # 1/1 is full rendering
+	testing_density = 1/4 if not is_test else 1/800 # 1/1 is full rendering
 	nb_logs = 15
-	is_scanning = False
+	is_scanning = True
 	is_exporting = True
 
 	particles_textufy(source_file, file_type_token, dest_path, dest_file_name, dimensions, kept_dimensions, minmaxs, testing_density, nb_logs, is_scanning, is_exporting)
