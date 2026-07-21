@@ -160,18 +160,19 @@ def prepare_data_cube (source_file, file_type_token, dimensions):
         return data
     
     if (file_type_token == "NUMPY-MLOMBART"):
-        cube = np.load(source_file, allow_pickle=True)
+        # This data actually contains 20 cubes and not just 1
+        data = np.load(source_file, allow_pickle=True)
 
-        data = cube.tolist()
-        pos_x = data["pos_x"]
+        cubes = data.tolist()
+        pos_x = cubes["pos_x"]
 
-        print(data["current_x"][0][0][0])
+        # print(cubes["current_x"][0][0][0])
         
-        print("Data contains " + str(len(data)) + " cubes.")
-        print("Data cube shapes are " + str(pos_x.shape) + " with a total of " + str(pos_x.size) + " elements each.")
-        print("Total number of elements is: " + str(pos_x.size * len(data)))
+        logger.info("Data contains " + str(len(cubes)) + " cubes.")
+        logger.info("Data cube shapes are " + str(pos_x.shape) + " with a total of " + str(pos_x.size) + " elements each.")
+        logger.info("Total number of elements is: " + str(pos_x.size * len(cubes)))
         
-        return data
+        return cubes
         
     elif (file_type_token == "DAT"):
         f = FortranFile(os.path.expanduser(source_file), 'r')
@@ -229,18 +230,21 @@ def compute_loop_variables(data, testing_density):
     z_range = math.floor(data.shape[2] * testing_density)
     step = math.floor(data.shape[1] / x_range)
     
-    return [testing_value, log_ratio_text, base_size, base_count, actual_count, x_range, y_range, z_range, step]
+    return [log_ratio_text, base_size, base_count, actual_count, x_range, y_range, z_range, step]
 
 def enrich_output_file_name (dest_file_name, quality, testing_density):
     testing_value = round(1/testing_density)
 
     return dest_file_name + ("-HQ" if quality == "high" else "-LQ") + ("" if testing_value == 1 else ("-1-in-" + str(testing_value)))
 
-def klodu_scan (data, log_ratio_text, base_count, actual_count, x_range, y_range, z_range, step, dimensions, is_cell_array, nb_logs):
+def klodu_scan (data, log_ratio_text, base_count, actual_count, x_range, y_range, z_range, step, dimensions, nb_logs):
 
     logger.info("Scanning " + log_ratio_text +  str(base_count) + " (== " + str(actual_count) + ") rows to determine min and max values (number of logs: " + str(nb_logs) + ")...")
     
     start_time = datetime.datetime.now()
+
+    # Check if each cell contains a scalar or an array (some have only 1 value but still in an array... with 1 value)
+    is_cell_array = not np.isscalar(data[0][0][0])
         
     # Init minmax array (extremal values of positions, velocities... whatever)
     real_minmaxs = []
@@ -310,7 +314,7 @@ def klodu_scan (data, log_ratio_text, base_count, actual_count, x_range, y_range
     delta = end_time.timestamp() - start_time.timestamp()
     logger.success("Scanned data in: " + str(round(delta, 2)) + " seconds.")
     
-def klodu_export(data, log_ratio_text, actual_count, dest_path, dest_file_name, base_size, testing_density, size, minmaxs, quality, x_range, y_range, z_range, step, dimensions, is_cell_array, nb_logs):
+def klodu_export(data, log_ratio_text, actual_count, dest_path, dest_file_name, base_size, testing_density, size, minmaxs, quality, x_range, y_range, z_range, step, dimensions, nb_logs):
 
     logger.info("Exporting " + log_ratio_text + str(data.size) + " (== " + str(actual_count) + ") remapped values to Unity Texture3D file " + dest_file_name + ".asset of cube size " + str(size) + "³ = " + str(size ** 3) + " (number of logs: " + str(nb_logs) + ")...")
     logger.info("Using following minmaxs array: " + str(minmaxs))
@@ -330,6 +334,9 @@ def klodu_export(data, log_ratio_text, actual_count, dest_path, dest_file_name, 
     dimensionality = len(dimensions)
 
     max_resolution = (65536 - 1) if (quality == "high") else (256 - 1)
+
+    # Check if each cell contains a scalar or an array (some have only 1 value but still in an array... with 1 value)
+    is_cell_array = not np.isscalar(data[0][0][0])
     
     j = 0
     logs_count = 0
@@ -419,26 +426,22 @@ def klodufy (source_file, file_type_token, size, dimensions, minmaxs, quality, d
 
     # Get loop variables
     loop_vars = compute_loop_variables(data, testing_density)
-    testing_value = loop_vars[0]
-    log_ratio_text = loop_vars[1]
-    base_size = loop_vars[2]
-    base_count = loop_vars[3]
-    actual_count = loop_vars[4]
-    x_range = loop_vars[5]
-    y_range = loop_vars[6]
-    z_range = loop_vars[7]
-    step = loop_vars[8]
-    
-    # Check if each cell contains a scalar or an array (some have only 1 value but still in an array... with 1 value)
-    is_cell_array = not np.isscalar(data[0][0][0])
+    log_ratio_text = loop_vars[0]
+    base_size = loop_vars[1]
+    base_count = loop_vars[2]
+    actual_count = loop_vars[3]
+    x_range = loop_vars[4]
+    y_range = loop_vars[5]
+    z_range = loop_vars[6]
+    step = loop_vars[7]
     
     # LOOP 1: scan & detect extreme values
     if (is_scanning):
-        klodu_scan(data, log_ratio_text, base_count, actual_count, x_range, y_range, z_range, step, dimensions, is_cell_array, nb_logs)
+        klodu_scan(data, log_ratio_text, base_count, actual_count, x_range, y_range, z_range, step, dimensions, nb_logs)
     
     # LOOP 2: normalize so it fits max resolution
     if (is_exporting):
-        klodu_export(data, log_ratio_text, actual_count, dest_path, dest_file_name, base_size, testing_density, size, minmaxs, quality, x_range, y_range, z_range, step, dimensions, is_cell_array, nb_logs)
+        klodu_export(data, log_ratio_text, actual_count, dest_path, dest_file_name, base_size, testing_density, size, minmaxs, quality, x_range, y_range, z_range, step, dimensions, nb_logs)
 
 # Count points in pointcloud to create 3D texture (voxel cloud), or add their density
 def klodufy_txt (source_file, size, source_xyz_min, source_xyz_max, quality, dest_path, dest_file_name, testing_density, nb_logs):
