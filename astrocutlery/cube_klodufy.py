@@ -12,13 +12,15 @@ from loguru import logger
 import os # for Fortran .dat
 import numpy as np # for .npy & Fortran .dat
 from scipy.io import FortranFile # for Fortran .dat
-from astrocutlery.utensils import round_to_n, remap
+from astrocutlery.utensils import round_to_n, remap, configure_loguru
 
 error_start = "\033[91m"
 error_end = "\033[0m"
 
-def write_unity_header (destination_file, file_name, base_size, testing_density, dimensionality, quality):
+def write_unity_header (destination_file, file_name, base_size, testing_density, dimensions, quality):
     
+    dimensionality = len(dimensions)
+
     actual_size = math.floor(base_size * testing_density)
     
     data_size_scale = 0
@@ -144,8 +146,12 @@ def parse_int_to_formatted_hex (value, quality):
     
     return hex_value
 
-def prepare_data_cube (source_file, file_type_token, dimensionality):
+def prepare_data_cube (source_file, file_type_token, dimensions):
     
+    dimensionality = len(dimensions)
+
+    logger.info("Preparing data cube from " + str(source_file) + " of type " + str(file_type_token) + " with dimensions " + str(dimensions))
+
     if (file_type_token == "NUMPY"):
         data = np.load(source_file)
         
@@ -203,12 +209,42 @@ def prepare_data_cube (source_file, file_type_token, dimensionality):
         
         return False
 
-def klodu_scan (data, log_ratio, base_count, actual_count, dimensionality, x_range, y_range, z_range, step, dimensions, is_cell_array, nb_logs):
-    print("Scanning " + log_ratio +  str(base_count) + " (== " + str(actual_count) + ") rows to determine min and max values...")
+def compute_loop_variables(data, testing_density):
+
+    # testing_value
+    testing_value = round(1/testing_density)
+
+    # log_ratio_text
+    log_ratio_text = "all of " if testing_value == 1 else ("1 in " + str(testing_value) + "³ (= 1 in " + str(testing_value ** 3) + ") of all ")
+
+
+    # base_count and actual_count
+    base_size = data.shape[0]
+    base_count = base_size * base_size * base_size
+    actual_count = math.floor(base_count * (testing_density ** 3))
+
+    # ranges and step
+    x_range = math.floor(data.shape[0] * testing_density)
+    y_range = math.floor(data.shape[1] * testing_density)
+    z_range = math.floor(data.shape[2] * testing_density)
+    step = math.floor(data.shape[1] / x_range)
+    
+    return [testing_value, log_ratio_text, base_size, base_count, actual_count, x_range, y_range, z_range, step]
+
+def enrich_output_file_name (dest_file_name, quality, testing_density):
+    testing_value = round(1/testing_density)
+
+    return dest_file_name + ("-HQ" if quality == "high" else "-LQ") + ("" if testing_value == 1 else ("-1-in-" + str(testing_value)))
+
+def klodu_scan (data, log_ratio_text, base_count, actual_count, x_range, y_range, z_range, step, dimensions, is_cell_array, nb_logs):
+
+    logger.info("Scanning " + log_ratio_text +  str(base_count) + " (== " + str(actual_count) + ") rows to determine min and max values (number of logs: " + str(nb_logs) + ")...")
+    
     start_time = datetime.datetime.now()
         
     # Init minmax array (extremal values of positions, velocities... whatever)
     real_minmaxs = []
+    dimensionality = len(dimensions)
     for d in range(0, dimensionality):
         real_minmaxs.append([float("inf"), float("-inf")])
     
@@ -274,11 +310,25 @@ def klodu_scan (data, log_ratio, base_count, actual_count, dimensionality, x_ran
     delta = end_time.timestamp() - start_time.timestamp()
     logger.success("Scanned data in: " + str(round(delta, 2)) + " seconds.")
     
-def klodu_export(data, log_ratio, actual_count, dest_file_name, size, minmaxs, quality, x_range, y_range, z_range, step, dimensionality, dimensions, is_cell_array, destination_file, nb_logs):
-    logger.info("Exporting " + log_ratio + str(data.size) + " (== " + str(actual_count) + ") remapped values to Unity Texture3D file " + dest_file_name + ".asset of cube size " + str(size) + "³ = " + str(size ** 3) + "...")
+def klodu_export(data, log_ratio_text, actual_count, dest_path, dest_file_name, base_size, testing_density, size, minmaxs, quality, x_range, y_range, z_range, step, dimensions, is_cell_array, nb_logs):
+
+    logger.info("Exporting " + log_ratio_text + str(data.size) + " (== " + str(actual_count) + ") remapped values to Unity Texture3D file " + dest_file_name + ".asset of cube size " + str(size) + "³ = " + str(size ** 3) + " (number of logs: " + str(nb_logs) + ")...")
     logger.info("Using following minmaxs array: " + str(minmaxs))
+    logger.info("Export quality: " + str(quality))
+
     start_time = datetime.datetime.now()
+
+    # Prepare output file name
+    dest_file_name = enrich_output_file_name(dest_file_name, quality, testing_density)
+
+    # Prepare export file
+    destination_file = open("output/" + dest_path + dest_file_name + ".asset", "w")
+
+    # Generate Unity header
+    write_unity_header(destination_file, dest_file_name, base_size, testing_density, dimensions, quality)
     
+    dimensionality = len(dimensions)
+
     max_resolution = (65536 - 1) if (quality == "high") else (256 - 1)
     
     j = 0
@@ -353,50 +403,42 @@ def klodu_export(data, log_ratio, actual_count, dest_file_name, size, minmaxs, q
 # 3-dimension high quality intensities are exported to 3 x 16-bit RGB 3D-textures, TextureFormat.RGB48 in Unity
 def klodufy (source_file, file_type_token, size, dimensions, minmaxs, quality, dest_path, dest_file_name, testing_density, nb_logs, is_scanning, is_exporting):
     
-    # Testing mode inits
-    testing_density = min(1, testing_density) # Make sure it don't go krazy (> 1)
-    testing_value = round(1/testing_density)
-    
-    # Various inits
-    log_ratio = "all of " if testing_value == 1 else ("1 in " + str(testing_value ** 3) + " of all ")
-    dimensionality = len(dimensions)
-    
-    # Prepare output file name
-    dest_file_name = dest_file_name + ("-HQ" if quality == "high" else "-LQ")
-    dest_file_name = dest_file_name + ("" if testing_value == 1 else ("-1-in-" + str(testing_value)))
-    
-    # Hello
-    print("Starting work on data cube " + dest_file_name + "...")
-    print("type: " + file_type_token + ", size: " + str(size) + ", dimensions: " + str(dimensions) + ", minmaxs: " + str(minmaxs) + ", quality: " + quality + ", testing density: 1 in " + str(testing_value) + "³ == 1 in " + str(testing_value ** 3) + ", number of logs: " + str(nb_logs))
-    
+    # Configure loguru
+    configure_loguru()
+
+    # Secure input arguments
+    testing_density = min(1, testing_density)
+
+    # Check if the method should run anything
+    if (not is_scanning and not is_exporting):
+        logger.error("Neither scanning nor exporting, aborting function.")
+        return
+
     # Load data cube
-    data = prepare_data_cube(source_file, file_type_token, dimensionality)
-    
-    # Prepare export file
-    destination_file = open("output/" + dest_path + dest_file_name + ".asset", "w")
-    
-    # Generate Unity header
-    base_size = data.shape[0]
-    base_count = base_size * base_size * base_size
-    actual_count = math.floor(base_count * (testing_density ** 3))
-    write_unity_header(destination_file, dest_file_name, base_size, testing_density, dimensionality, quality)
+    data = prepare_data_cube(source_file, file_type_token, dimensions)
+
+    # Get loop variables
+    loop_vars = compute_loop_variables(data, testing_density)
+    testing_value = loop_vars[0]
+    log_ratio_text = loop_vars[1]
+    base_size = loop_vars[2]
+    base_count = loop_vars[3]
+    actual_count = loop_vars[4]
+    x_range = loop_vars[5]
+    y_range = loop_vars[6]
+    z_range = loop_vars[7]
+    step = loop_vars[8]
     
     # Check if each cell contains a scalar or an array (some have only 1 value but still in an array... with 1 value)
     is_cell_array = not np.isscalar(data[0][0][0])
     
-    # Compute ranges (related to testing_density)
-    x_range = math.floor(data.shape[0] * testing_density)
-    y_range = math.floor(data.shape[1] * testing_density)
-    z_range = math.floor(data.shape[2] * testing_density)
-    step = math.floor(data.shape[1] / x_range)
-    
     # LOOP 1: scan & detect extreme values
     if (is_scanning):
-        klodu_scan(data, log_ratio, base_count, actual_count, dimensionality, x_range, y_range, z_range, step, dimensions, is_cell_array, nb_logs)
+        klodu_scan(data, log_ratio_text, base_count, actual_count, x_range, y_range, z_range, step, dimensions, is_cell_array, nb_logs)
     
     # LOOP 2: normalize so it fits max resolution
     if (is_exporting):
-        klodu_export(data, log_ratio, actual_count, dest_file_name, size, minmaxs, quality, x_range, y_range, z_range, step, dimensionality, dimensions, is_cell_array, destination_file, nb_logs)
+        klodu_export(data, log_ratio_text, actual_count, dest_path, dest_file_name, base_size, testing_density, size, minmaxs, quality, x_range, y_range, z_range, step, dimensions, is_cell_array, nb_logs)
 
 # Count points in pointcloud to create 3D texture (voxel cloud), or add their density
 def klodufy_txt (source_file, size, source_xyz_min, source_xyz_max, quality, dest_path, dest_file_name, testing_density, nb_logs):
