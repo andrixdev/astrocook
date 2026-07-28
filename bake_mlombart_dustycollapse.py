@@ -46,9 +46,18 @@ def klodufy_maxime_lombart_collapse (is_test=False):
 
     # Cube 5: electric current (3 -> 1)
     current_x = cubes["current_x"]
-    current_y = cubes["current_x"]
-    current_z = cubes["current_x"]
+    current_y = cubes["current_y"]
+    current_z = cubes["current_z"]
     current = np.zeros((size, size, size))
+
+    # Cube 6: magnetic field magnitude (average of left and right components)
+    B_x_left = cubes["B_left_x"]
+    B_y_left = cubes["B_left_y"]
+    B_z_left = cubes["B_left_z"]
+    B_x_right = cubes["B_right_x"]
+    B_y_right = cubes["B_right_y"]
+    B_z_right = cubes["B_right_z"]
+    B = np.zeros((size, size, size))
 
     logger.info("Computing 1-dimensional cubes from 3-dimensional datasets...")
 
@@ -72,6 +81,11 @@ def klodufy_maxime_lombart_collapse (is_test=False):
                 cz = current_z[i][j][k]
 
                 current[i][j][k] = math.sqrt(cx*cx + cy*cy + cz*cz)
+
+                bx = 0.5 * (B_x_left[i][j][k] + B_x_right[i][j][k])
+                by = 0.5 * (B_y_left[i][j][k] + B_y_right[i][j][k])
+                bz = 0.5 * (B_z_left[i][j][k] + B_z_right[i][j][k])
+                B[i][j][k] = math.sqrt(bx*bx + by*by + bz*bz)
 
     logger.success("Computed 1-dimensional cubes from 3-dimensional datasets.")
 
@@ -119,7 +133,7 @@ def klodufy_maxime_lombart_collapse (is_test=False):
     minmaxs = [ [-4.7, -2.3] ]
     dest_file_name = "maxime-lombart-cube-" + file_prefix + "-" + str(size) + ("-testing" if is_test else "")
 
-    klodu_export(sd, log_ratio_text, actual_count, dest_path, dest_file_name, base_size, testing_density, size, minmaxs, quality, x_range, y_range, z_range, step, dimensions, nb_logs)
+    # klodu_export(sd, log_ratio_text, actual_count, dest_path, dest_file_name, base_size, testing_density, size, minmaxs, quality, x_range, y_range, z_range, step, dimensions, nb_logs)
 
     # Cube 4: v_dust
     dimensions = [ ["vdust", "log"] ]
@@ -130,7 +144,7 @@ def klodufy_maxime_lombart_collapse (is_test=False):
     minmaxs = [ [4.3, 5.5] ]
     dest_file_name = "maxime-lombart-cube-" + file_prefix + "-" + str(size) + ("-testing" if is_test else "")
 
-    klodu_export(v_dust, log_ratio_text, actual_count, dest_path, dest_file_name, base_size, testing_density, size, minmaxs, quality, x_range, y_range, z_range, step, dimensions, nb_logs)
+    # klodu_export(v_dust, log_ratio_text, actual_count, dest_path, dest_file_name, base_size, testing_density, size, minmaxs, quality, x_range, y_range, z_range, step, dimensions, nb_logs)
 
     # Cube 5: current
     dimensions = [ ["current", "log"] ]
@@ -141,10 +155,18 @@ def klodufy_maxime_lombart_collapse (is_test=False):
     minmaxs = [ [-1.5, 11] ]
     dest_file_name = "maxime-lombart-cube-" + file_prefix + "-" + str(size) + ("-testing" if is_test else "")
 
-    klodu_export(current, log_ratio_text, actual_count, dest_path, dest_file_name, base_size, testing_density, size, minmaxs, quality, x_range, y_range, z_range, step, dimensions, nb_logs)
+    # klodu_export(current, log_ratio_text, actual_count, dest_path, dest_file_name, base_size, testing_density, size, minmaxs, quality, x_range, y_range, z_range, step, dimensions, nb_logs)
 
-    
-    # current
+    # Cube 6: magnetic field magnitude
+    dimensions = [ ["B", "log"] ]
+    file_prefix = "B"
+
+    # klodu_scan(B, log_ratio_text, base_count, actual_count, x_range, y_range, z_range, step, dimensions, nb_logs)
+
+    minmaxs = [ [-5, -1] ]
+    dest_file_name = "maxime-lombart-cube-" + file_prefix + "-" + str(size) + ("-testing" if is_test else "")
+
+    klodu_export(B, log_ratio_text, actual_count, dest_path, dest_file_name, base_size, testing_density, size, minmaxs, quality, x_range, y_range, z_range, step, dimensions, nb_logs)
 
 
 if __name__ == "__main__":
