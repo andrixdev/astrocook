@@ -12,7 +12,7 @@ from loguru import logger
 import os # for Fortran .dat
 import numpy as np # for .npy & Fortran .dat
 from scipy.io import FortranFile # for Fortran .dat
-from astrocutlery.utensils import round_to_n, remap, configure_loguru
+from astrocutlery.utensils import round_to_n, remap, configure_loguru, get_ordinal_suffix
 
 error_start = "\033[91m"
 error_end = "\033[0m"
@@ -147,6 +147,8 @@ def parse_int_to_formatted_hex (value, quality):
     return hex_value
 
 def prepare_data_cube (source_file, file_type_token, dimensions):
+
+    configure_loguru()
     
     dimensionality = len(dimensions)
 
@@ -154,8 +156,8 @@ def prepare_data_cube (source_file, file_type_token, dimensions):
 
     if (file_type_token == "NUMPY"):
         data = np.load(source_file)
-        
-        print("Data shape is " + str(data.shape) + " with a total of " + str(data.size) + " elements.")
+
+        logger.info("Data shape is " + str(data.shape) + " with a total of " + str(data.size) + " elements.")
         
         return data
     
@@ -196,17 +198,17 @@ def prepare_data_cube (source_file, file_type_token, dimensions):
                     keys.remove(dim)
                     keys.insert(0, dim)
 
-            print("Keys: %s" % keys)
+            logger.info("HDF5 keys: %s" % keys)
             
             # Load all datasets and stack them
             datasets = [np.array(f[key]) for key in keys]
             data = np.column_stack(datasets) if len(datasets) > 1 else np.array(datasets[0])
         
-        print("Data shape is " + str(data.shape) + " with a total of " + str(data.size) + " elements.")
+        logger.info("Data shape is " + str(data.shape) + " with a total of " + str(data.size) + " elements.")
         return data
         
     else:
-        print("[prepare_data_cube(...)] Unknown file type token: " + file_type_token)
+        logger.error("[prepare_data_cube(...)] Unknown file type token: " + file_type_token)
         
         return False
 
@@ -238,6 +240,8 @@ def enrich_output_file_name (dest_file_name, quality, testing_density):
     return dest_file_name + ("-HQ" if quality == "high" else "-LQ") + ("" if testing_value == 1 else ("-1-in-" + str(testing_value)))
 
 def klodu_scan (data, log_ratio_text, base_count, actual_count, x_range, y_range, z_range, step, dimensions, nb_logs):
+
+    configure_loguru()
 
     logger.info("Scanning " + log_ratio_text +  str(base_count) + " (== " + str(actual_count) + ") rows to determine min and max values (number of logs: " + str(nb_logs) + ")...")
     
@@ -299,15 +303,16 @@ def klodu_scan (data, log_ratio_text, base_count, actual_count, x_range, y_range
                 # Maybe log
                 if ((i / actual_count) >= (logs_count / nb_logs)):
                     logs_count += 1
-                    print(str(1 + i * step ** 3) + "th row values are: " + log_row)
+                    th_nb = str(1 + i * step ** 3) + get_ordinal_suffix(1 + i * step ** 3)
+                    logger.bind(color="fg #E44").trace(th_nb + " row values are: " + log_row)
                     
                 i += 1
 
     # Log detected extrema
     for d in range(0, dimensionality):
         dimension_name = dimensions[d][0]
-        print("Min value for " + dimension_name + " is: " + str(real_minmaxs[d][0]))
-        print("Max value for " + dimension_name + " is: " + str(real_minmaxs[d][1]))
+        logger.bind(color="fg #DA7").trace("Min value for " + dimension_name + " is: " + str(real_minmaxs[d][0]))
+        logger.bind(color="fg #DA7").trace("Max value for " + dimension_name + " is: " + str(real_minmaxs[d][1]))
     
     # Log scanning time
     end_time = datetime.datetime.now()
@@ -315,6 +320,8 @@ def klodu_scan (data, log_ratio_text, base_count, actual_count, x_range, y_range
     logger.success("Scanned data in: " + str(round(delta, 2)) + " seconds.")
     
 def klodu_export(data, log_ratio_text, actual_count, dest_path, dest_file_name, base_size, testing_density, size, minmaxs, quality, x_range, y_range, z_range, step, dimensions, nb_logs):
+
+    configure_loguru()
 
     logger.info("Exporting " + log_ratio_text + str(data.size) + " (== " + str(actual_count) + ") remapped values to Unity Texture3D file " + dest_file_name + ".asset of cube size " + str(size) + "³ = " + str(size ** 3) + " (number of logs: " + str(nb_logs) + ")...")
     logger.info("Using following minmaxs array: " + str(minmaxs))
@@ -383,7 +390,8 @@ def klodu_export(data, log_ratio_text, actual_count, dest_path, dest_file_name, 
                 # Maybe log
                 if ((j / actual_count) >= (logs_count / nb_logs)):
                     logs_count += 1
-                    print(str(1 + j * step ** 3) + "th row values are: " + log_row)
+                    th_nb = str(1 + j * step ** 3) + get_ordinal_suffix(1 + j * step ** 3)
+                    logger.bind(color="fg #3FB").trace(th_nb + " remapped row values are: " + log_row)
                     
                 j += 1
     

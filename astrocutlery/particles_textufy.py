@@ -118,7 +118,7 @@ def prepare_particles_data(source_file, file_type_token):
 		from scipy.io import readsav
 		
 		sav = readsav(source_file)
-		print(sav.keys())
+		logger.info("SAV keys: " + str(list(sav.keys())))
 		cell = sav.cell
 		x, y, z, dx = cell.x[0], cell.y[0], cell.z[0], cell.dx[0]
 		variables = cell[0][4]
@@ -222,7 +222,8 @@ def particles_scan(data, actual_count, step, dimensions, file_type_token, nb_log
 				real_minmaxs[d][0] = val
 			
 		if (i % max(1, int(round(actual_count/nb_logs))) == 0):
-			logger.bind(color="fg #E44").trace(str(i) + "th row is: " + row)
+			th_nb = str(i + 1) + get_ordinal_suffix(i + 1)
+			logger.bind(color="fg #E44").trace(th_nb + " row is: " + row)
 		
 	# Log detected extrema
 	for d in range(0, dims):

@@ -11,13 +11,21 @@ from astrocutlery.utensils import prepend_zeros
 # MAXIME LOMBART DUSTY COLLAPSE
 # Note: this data contains 20 cubes within the same dictionary
 # Note: can't use klodufy but a special sequence of its internal functions
-def klodufy_maxime_lombart_collapse (is_test=False):
+def klodufy_maxime_lombart_collapse (mode, is_test=False):
 
-    source_file = "./data/maximelombart/1-frame-cube/data_cube_128_ramses.npy"
+    do_scan = is_test
+
+    if mode == "big":
+        source_file = "./data/maximelombart/1-frame-big-cube/data_cube_256_ramses_output00145_simu_multifluid.npy"
+        size = 256
+        dest_path = "maximelombart/1-frame-big-cube/"
+    else:
+        source_file = "./data/maximelombart/1-frame-cube/data_cube_128_ramses_output00040_simu_multifluid.npy"
+        size = 128
+        dest_path = "maximelombart/1-frame-cube/"
+
     file_type_token = "NUMPY-MLOMBART"
-    size = 128
-    quality = "high"
-    dest_path = "maximelombart/1-frame-cube/"
+    quality = "low"
 
     dimensions = [ ["dummy", "linear"] ]
     cubes = prepare_data_cube(source_file, file_type_token, dimensions)
@@ -106,68 +114,100 @@ def klodufy_maxime_lombart_collapse (is_test=False):
     dimensions = [ ["rho", "log"] ]
     file_prefix = "rho"
 
-    # klodu_scan(rho, log_ratio_text, base_count, actual_count, x_range, y_range, z_range, step, dimensions, nb_logs)
+    if do_scan:
+        klodu_scan(rho, log_ratio_text, base_count, actual_count, x_range, y_range, z_range, step, dimensions, nb_logs)
 
-    minmaxs = [ [-19, -12.5] ]
-    dest_file_name = "maxime-lombart-cube-" + file_prefix + "-" + str(size) + ("-testing" if is_test else "")
+    if mode == "big":
+        minmaxs = [ [-19.0, -12.1] ]
+        dest_file_name = "maxime-lombart-big-cube-" + file_prefix + "-" + str(size) + ("-testing" if is_test else "")
+    else:
+        minmaxs = [ [-19, -12.5] ]
+        dest_file_name = "maxime-lombart-cube-" + file_prefix + "-" + str(size) + ("-testing" if is_test else "")
 
-    # klodu_export(rho, log_ratio_text, actual_count, dest_path, dest_file_name, base_size, testing_density, size, minmaxs, quality, x_range, y_range, z_range, step, dimensions, nb_logs)
+    klodu_export(rho, log_ratio_text, actual_count, dest_path, dest_file_name, base_size, testing_density, size, minmaxs, quality, x_range, y_range, z_range, step, dimensions, nb_logs)
 
     # Cube 2: v
     dimensions = [ ["v", "log"] ]
     file_prefix = "v"
 
-    # klodu_scan(v, log_ratio_text, base_count, actual_count, x_range, y_range, z_range, step, dimensions, nb_logs)
+    if do_scan:
+        klodu_scan(v, log_ratio_text, base_count, actual_count, x_range, y_range, z_range, step, dimensions, nb_logs)
 
-    minmaxs = [ [4.2, 5.5] ]
-    dest_file_name = "maxime-lombart-cube-" + file_prefix + "-" + str(size) + ("-testing" if is_test else "")
+    if mode == "big":
+        minmaxs = [ [3.5, 5.7] ]
+        dest_file_name = "maxime-lombart-big-cube-" + file_prefix + "-" + str(size) + ("-testing" if is_test else "")
+    else:
+        minmaxs = [ [4.2, 5.5] ]
+        dest_file_name = "maxime-lombart-cube-" + file_prefix + "-" + str(size) + ("-testing" if is_test else "")
 
-    # klodu_export(v, log_ratio_text, actual_count, dest_path, dest_file_name, base_size, testing_density, size, minmaxs, quality, x_range, y_range, z_range, step, dimensions, nb_logs)
+    klodu_export(v, log_ratio_text, actual_count, dest_path, dest_file_name, base_size, testing_density, size, minmaxs, quality, x_range, y_range, z_range, step, dimensions, nb_logs)
 
     # Cube 3: sd
     dimensions = [ ["sd", "log"] ]
     file_prefix = "sd"
 
-    # klodu_scan(sd, log_ratio_text, base_count, actual_count, x_range, y_range, z_range, step, dimensions, nb_logs)
+    if do_scan:
+        klodu_scan(sd, log_ratio_text, base_count, actual_count, x_range, y_range, z_range, step, dimensions, nb_logs)
 
-    minmaxs = [ [-4.7, -2.3] ]
-    dest_file_name = "maxime-lombart-cube-" + file_prefix + "-" + str(size) + ("-testing" if is_test else "")
+    if mode == "big":
+        minmaxs = [ [-4.6, -1.7] ]
+        dest_file_name = "maxime-lombart-big-cube-" + file_prefix + "-" + str(size) + ("-testing" if is_test else "")
+    else:
+        minmaxs = [ [-4.7, -2.3] ]
+        dest_file_name = "maxime-lombart-cube-" + file_prefix + "-" + str(size) + ("-testing" if is_test else "")
 
-    # klodu_export(sd, log_ratio_text, actual_count, dest_path, dest_file_name, base_size, testing_density, size, minmaxs, quality, x_range, y_range, z_range, step, dimensions, nb_logs)
+    klodu_export(sd, log_ratio_text, actual_count, dest_path, dest_file_name, base_size, testing_density, size, minmaxs, quality, x_range, y_range, z_range, step, dimensions, nb_logs)
 
     # Cube 4: v_dust
     dimensions = [ ["vdust", "log"] ]
     file_prefix = "vdust"
 
-    # klodu_scan(v_dust, log_ratio_text, base_count, actual_count, x_range, y_range, z_range, step, dimensions, nb_logs)
+    if do_scan:
+        klodu_scan(v_dust, log_ratio_text, base_count, actual_count, x_range, y_range, z_range, step, dimensions, nb_logs)
 
-    minmaxs = [ [4.3, 5.5] ]
-    dest_file_name = "maxime-lombart-cube-" + file_prefix + "-" + str(size) + ("-testing" if is_test else "")
+    if mode == "big":
+        minmaxs = [ [3.4, 5.7] ]
+        dest_file_name = "maxime-lombart-big-cube-" + file_prefix + "-" + str(size) + ("-testing" if is_test else "")
+    else:
+        minmaxs = [ [4.3, 5.5] ]
+        dest_file_name = "maxime-lombart-cube-" + file_prefix + "-" + str(size) + ("-testing" if is_test else "")
 
-    # klodu_export(v_dust, log_ratio_text, actual_count, dest_path, dest_file_name, base_size, testing_density, size, minmaxs, quality, x_range, y_range, z_range, step, dimensions, nb_logs)
+    klodu_export(v_dust, log_ratio_text, actual_count, dest_path, dest_file_name, base_size, testing_density, size, minmaxs, quality, x_range, y_range, z_range, step, dimensions, nb_logs)
 
     # Cube 5: current
     dimensions = [ ["current", "log"] ]
     file_prefix = "current"
 
-    # klodu_scan(current, log_ratio_text, base_count, actual_count, x_range, y_range, z_range, step, dimensions, nb_logs)
+    if do_scan:
+        klodu_scan(current, log_ratio_text, base_count, actual_count, x_range, y_range, z_range, step, dimensions, nb_logs)
 
-    minmaxs = [ [-1.5, 11] ]
-    dest_file_name = "maxime-lombart-cube-" + file_prefix + "-" + str(size) + ("-testing" if is_test else "")
+    if mode == "big":
+        minmaxs = [ [4.4, 11.3] ]
+        dest_file_name = "maxime-lombart-big-cube-" + file_prefix + "-" + str(size) + ("-testing" if is_test else "")
+    else:
+        minmaxs = [ [-1.5, 11] ]
+        dest_file_name = "maxime-lombart-cube-" + file_prefix + "-" + str(size) + ("-testing" if is_test else "")
 
-    # klodu_export(current, log_ratio_text, actual_count, dest_path, dest_file_name, base_size, testing_density, size, minmaxs, quality, x_range, y_range, z_range, step, dimensions, nb_logs)
+    klodu_export(current, log_ratio_text, actual_count, dest_path, dest_file_name, base_size, testing_density, size, minmaxs, quality, x_range, y_range, z_range, step, dimensions, nb_logs)
 
     # Cube 6: magnetic field magnitude
     dimensions = [ ["B", "log"] ]
     file_prefix = "B"
 
-    # klodu_scan(B, log_ratio_text, base_count, actual_count, x_range, y_range, z_range, step, dimensions, nb_logs)
+    if do_scan:
+        klodu_scan(B, log_ratio_text, base_count, actual_count, x_range, y_range, z_range, step, dimensions, nb_logs)
 
-    minmaxs = [ [-5, -1] ]
-    dest_file_name = "maxime-lombart-cube-" + file_prefix + "-" + str(size) + ("-testing" if is_test else "")
+    if mode == "big":
+        minmaxs = [ [-5.2, -1.1] ]
+        dest_file_name = "maxime-lombart-big-cube-" + file_prefix + "-" + str(size) + ("-testing" if is_test else "")
+    else:
+        minmaxs = [ [-5, -1] ]
+        dest_file_name = "maxime-lombart-cube-" + file_prefix + "-" + str(size) + ("-testing" if is_test else "")
 
     klodu_export(B, log_ratio_text, actual_count, dest_path, dest_file_name, base_size, testing_density, size, minmaxs, quality, x_range, y_range, z_range, step, dimensions, nb_logs)
 
 
 if __name__ == "__main__":
-    klodufy_maxime_lombart_collapse()
+    is_test = False
+    # klodufy_maxime_lombart_collapse("normal", is_test)
+    klodufy_maxime_lombart_collapse("big", is_test)
