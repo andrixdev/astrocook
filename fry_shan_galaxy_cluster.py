@@ -22,7 +22,7 @@ def textufy_san_han_galaxy_cluster_xyzdensitytemp(is_test=False):
 	kept_dimensions = [1, 1, 1, 1, 1]
 	file_prefix = "xyzdensitytemp"
 	
-	source_file = "./data/sanhangalaxycluster/1-frame/nc_cluster.h5"
+	source_file = "./input/sanhangalaxycluster/1-frame/nc_cluster.h5"
 	file_type_token = "HDF5-SANHAN"
 	dest_path = "sanhangalaxycluster/1-frame/"
 	dest_file_name = "sanhangalaxycluster-" + file_prefix + ("-testing" if is_test else "")

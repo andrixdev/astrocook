@@ -17,7 +17,7 @@ def textufy_bifluid_xyzrho(is_test=False):
 		["rho", "linear", "LQ"] # already in log in source data
 	]
 	
-	source_file = "./data/bifluid/1-frame/bin1_bifluid_00045_clean3.txt"
+	source_file = "./input/bifluid/1-frame/bin1_bifluid_00045_clean3.txt"
 	file_type_token = "TXT"
 	dest_path = "bifluid/1-frame/"
 	dest_file_name = "bifluid-xyzrho" + ("-testing" if is_test else "")

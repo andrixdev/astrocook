@@ -1,0 +1,18 @@
+Here is a list of instructions.
+
+The current bake_mlombart_dustycollapse.py script scans and export several data cubes out of a .npy source file.
+At the moment it uses one data source: [...]/1-frame-cube/data_cube_128_ramses_output00040_simu_multifluid.npy
+I need it be become able to use a second new data source.
+The new data is within a new folder: "1-frame-big-cube"
+The new file is the only file in it.
+The current klodufy_maxime_lombart_collapse function should now also expect a string as its first parameter:
+- "normal" will trigger the size == 128 instructions with the current data
+- " big" will trigger the size == 256 with the new data
+- the extracted cubes (Cube 1 to Cube 6) remain the same
+- the only 1 out of 2 size-dependent parameters are the minmaxs, which will be set later. For now you can duplicate the values and just create the conditional statement on the size.
+- the second 2 out of 2 size-dependant parameter is the dest_file_name, which should become maxime-lombart-bug-cube in the size == 256 case
+
+# Notes
+- you only need modify bake_mlobart_dustycollapse.py and no other script
+- keep it simple
+- Running the script to check for scan and export (klodu_scan & klodu_export calls) will be done at a later time, no need to try to run those functions. Leave them all commented.

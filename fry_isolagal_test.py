@@ -17,7 +17,7 @@ def textufy_isolagal_stars_xyz(is_test=False):
 		["mass", "log", "HQ"]
 	]
 	
-	source_file = "./data/isolagal/1-frame/isolagal_stars.h5"
+	source_file = "./input/isolagal/1-frame/isolagal_stars.h5"
 	file_type_token = "HDF5"
 	dest_path = "isolagal/1-frame/"
 	dest_file_name = "isolagal-stars-xyz-test" + ("-testing" if is_test else "")
@@ -39,7 +39,7 @@ def textufy_isolagal_gas_xyz(is_test=False):
 		["rho", "log", "LQ"]
 	]
 	
-	source_file = "./data/isolagal/1-frame/isolagal_gas.h5"
+	source_file = "./input/isolagal/1-frame/isolagal_gas.h5"
 	file_type_token = "HDF5"
 	dest_path = "isolagal/1-frame/"
 	dest_file_name = "isolagal-gas-xyz" + ("-testing" if is_test else "")

@@ -1,0 +1,8 @@
+This repostory contains two core scripts: particles_textufy and cube_klodufy
+
+The loguru confirguration makes logs (for particles_scan and particles_export functions) pretty in the console with nice colors in particles_textufy.py
+However, loguru was not configured for cube_klodufy methods.
+
+I would like a similar loguru configuration for cube_klodufy with similar colors.
+
+Once ready, run a test bake_mlombart_dustycollapse scan & export (is_test == True) so I can see it in the console. Use "normal" mode to go faster.

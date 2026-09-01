@@ -15,7 +15,7 @@ def textufy_fred_thompson_starcluster_gas_xyzrho(is_test=False):
 	kept_dimensions = [1, 1, 1, 0, 1]
 	file_prefix = "xyzrho"
 	
-	source_file = "./data/fredthompson/1-frame/H10cluster_8pc_output176_gas.h5"
+	source_file = "./input/fredthompson/1-frame/H10cluster_8pc_output176_gas.h5"
 	file_type_token = "HDF5"
 	dest_path = "fredthompson/1-frame/"
 	dest_file_name = "fredthompson-gas-" + file_prefix + ("-testing" if is_test else "")
@@ -32,7 +32,7 @@ def textufy_fred_thompson_starcluster_stars_xyzmass(is_test=False):
 	kept_dimensions = [1, 1, 1, 1]
 	file_prefix = "xyzmass"
 	
-	source_file = "./data/fredthompson/1-frame/H10cluster_8pc_output176_stars.h5"
+	source_file = "./input/fredthompson/1-frame/H10cluster_8pc_output176_stars.h5"
 	file_type_token = "HDF5"
 	dest_path = "fredthompson/1-frame/"
 	dest_file_name = "fredthompson-stars-" + file_prefix + ("-testing" if is_test else "")
@@ -49,7 +49,7 @@ def textufy_fred_thompson_starcluster_clusters_xyzmass(is_test=False):
 	kept_dimensions = [1, 1, 1, 1, 1]
 	file_prefix = "xyzmass"
 	
-	source_file = "./data/fredthompson/1-frame/H10cluster_8pc_output176_clusters.h5"
+	source_file = "./input/fredthompson/1-frame/H10cluster_8pc_output176_clusters.h5"
 	file_type_token = "HDF5"
 	dest_path = "fredthompson/1-frame/"
 	dest_file_name = "fredthompson-clusters-" + file_prefix + ("-testing" if is_test else "")

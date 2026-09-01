@@ -19,7 +19,7 @@ def textufy_maxime_lombart_test_collapse(is_test=False):
 	minmaxs = [ [-5000, 5000], [-5000, 5000], [-5000, 5000], [-20, -11], [-6, -1.5] ]
 	kept_dimensions = [ 1, 1, 1, 1, 1 ]
 	file_prefix = "rhosize"
-	source_file = "./data/maximelombart/1-frame-test/collapse_data_ramses_output00122_simu_monofluid_test.npy"
+	source_file = "./input/maximelombart/1-frame-test/collapse_data_ramses_output00122_simu_monofluid_test.npy"
 	file_type_token = "NUMPY"
 	dest_path = "maximelombart/1-frame-test/"
 	dest_file_name = "maximelombart-" + file_prefix + ("-testing" if is_test else "")
@@ -49,7 +49,7 @@ def textufy_maxime_lombart_zoomed_test_collapse(is_test=False):
 
     kept_dimensions = [ 1, 1, 1, 1, 1 ]
     file_prefix = "rhosize"
-    source_file = "./data/maximelombart/1-frame-test/collapse_data_ramses_test_0122_monofluid.npy"
+    source_file = "./input/maximelombart/1-frame-test/collapse_data_ramses_test_0122_monofluid.npy"
     file_type_token = "NUMPY"
     dest_path = "maximelombart/1-frame-test/"
     dest_file_name = "maximelombart-" + file_prefix + "-zoomed-" + str(box_virial_radius) + ("-testing" if is_test else "")
@@ -84,14 +84,14 @@ def textufy_maxime_lombart_collapse(is_test=False):
 
     kept_dimensions = [ 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 ]
     file_prefix = "all"
-    source_file = "./data/maximelombart/1-frame/data_ramses_position_rhogas_vgas_speak_vspeak_bfield_current_output00122_simu_monofluid.npy"
+    source_file = "./input/maximelombart/1-frame/data_ramses_position_rhogas_vgas_speak_vspeak_bfield_current_output00122_simu_monofluid.npy"
     file_type_token = "NUMPY"
     dest_path = "maximelombart/1-frame/"
     dest_file_name = "maximelombart-" + file_prefix + ("-testing" if is_test else "")
     testing_density = 1/1
-    nb_logs = 15
-    is_scanning = False
-    is_exporting = True
+    nb_logs = 300
+    is_scanning = True
+    is_exporting = False
 
     particles_textufy(source_file, file_type_token, dest_path, dest_file_name, dimensions, kept_dimensions, minmaxs, testing_density, nb_logs, is_scanning, is_exporting)
 

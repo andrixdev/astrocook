@@ -12,7 +12,7 @@ def klodufy_yohandubois_galaxy_rho (is_test=False):
     minmaxs = [ [-7, -3] ]
     file_prefix = "density"
 
-    source_file = "./data/yohandubois/1-frame/cube_gasdensity_output_00070.dat"
+    source_file = "./input/yohandubois/1-frame/cube_gasdensity_output_00070.dat"
     file_type_token = "DAT"
     size = 128
     quality = "high"
@@ -30,7 +30,7 @@ def klodufy_yohandubois_galaxy_bz(is_test=False):
     minmaxs = [ [-0.00001, 0.00001] ]
     file_prefix = "bz"
 
-    source_file = "./data/yohandubois/1-frame/cube_bz_output_00070.dat"
+    source_file = "./input/yohandubois/1-frame/cube_bz_output_00070.dat"
     file_type_token = "DAT"
     size = 256
     quality = "high"

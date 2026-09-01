@@ -16,7 +16,7 @@ def textufy_maxime_rey_molecularcloud_gas_xyzrho(is_test=False):
 	kept_dimensions = [1, 1, 1, 1]
 	file_prefix = "xyzmass"
 	
-	source_file = "./data/maximereycloud/1-frame/stars.h5"
+	source_file = "./input/maximereycloud/1-frame/stars.h5"
 	file_type_token = "HDF5"
 	dest_path = "maximereycloud/1-frame/"
 	dest_file_name = "maximereycloud-gas-" + file_prefix + ("-testing" if is_test else "")
@@ -43,7 +43,7 @@ def textufy_maxime_rey_newcloud_xyzrho(is_test=False):
 	kept_dimensions = [1, 1, 1, 0, 1]
 	file_prefix = "xyzrho"
 	
-	source_file = "./data/maximereynewcloud/1-frame/gas.h5"
+	source_file = "./input/maximereynewcloud/1-frame/gas.h5"
 	file_type_token = "HDF5"
 	dest_path = "maximereynewcloud/1-frame/"
 	dest_file_name = "maximereynewcloud-" + file_prefix + ("-testing" if is_test else "")
@@ -71,7 +71,7 @@ def textufy_maxime_rey_newcloud_xyzrho_frame(frame, index, is_test=False):
 	file_prefix = "xyzrho"
 	
 	frame_index = prepend_zeros(frame, 5)
-	source_file = "./data/maximereynewcloud/168-frames/output_" + frame_index + "/gas.h5"
+	source_file = "./input/maximereynewcloud/168-frames/output_" + frame_index + "/gas.h5"
 	file_type_token = "HDF5"
 	dest_path = "maximereynewcloud/168-frames/"
 	dest_file_name = "maximereynewcloud-" + file_prefix + "-" + prepend_zeros(str(index), 3) + ("-testing" if is_test else "")

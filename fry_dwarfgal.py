@@ -35,7 +35,7 @@ def textufy_dwarfgal_xyz(is_test=False):
 	for i in range(0, end_index - start_index + 1):
 		frame = start_index + i
 		frame_index = prepend_zeros(frame, 4)
-		source_file = "./data/dwarfgal/500-frames/data_for_alex_" + str(frame_index) + ".npy"
+		source_file = "./input/dwarfgal/500-frames/data_for_alex_" + str(frame_index) + ".npy"
 		dest_file_name = "dwarfgal-" + file_prefix + "-" + prepend_zeros(str(i + 1), 3) + ("-testing" if is_test else "")
 	
 		frame_minmaxs = particles_textufy(source_file, file_type_token, dest_path, dest_file_name, dimensions, kept_dimensions, minmaxs, testing_density, nb_logs, is_scanning, is_exporting, zoombox)

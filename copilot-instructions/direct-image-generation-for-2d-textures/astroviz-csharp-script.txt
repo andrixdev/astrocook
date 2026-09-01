@@ -1,0 +1,658 @@
+#if UNITY_EDITOR
+/**
+ * ANDRIX ® 2025-2026 🤙
+ * 
+ * This script generates 2D textures out of text data containing rows
+ *
+ * All values have to be separated by a space character
+ * End of lines are needed too ("\n")
+ *
+ * The outputted textures can be sampled in Unity VFX graph to retrieve information
+ * Once they are in the Assets, don't forget to import them with the right parameters (see README-texture-generator.txt)
+ * 
+ */
+ 
+using System;
+using System.Globalization;
+using System.IO;
+using UnityEditor;
+using UnityEngine;
+using UnityEngine.Windows;
+using Unity.Mathematics;
+
+namespace Astroyum.Editor
+{
+	public class CreateTexture2DFromEditor
+	{
+		
+		static string PreprendZeros(int input, int targetLength)
+		{
+			string result = input.ToString();
+			int size = result.Length;
+			for (int i = 0; i < targetLength - size; i++)
+			{
+				result = "0" + result;
+			}
+			return result;
+		}
+
+		[MenuItem("Astroyum/Create 2D Texture from BIFLUID")]
+		static void CreateBifluidTexture2D()
+		{
+			float[] arrayOfMins = new float[4] {0.0f, 0.0f, 0.0f, 0.0f};
+			float[] arrayOfMaxs = new float[4] {1.0E6f, 1.0E6f, 1.0E6f, 1.0E3f};
+			string sourceAuthorFolderToken = "bifluid";
+			string sourceFramesFolderToken = "1-frame";
+			string sourceFileName = "bifluid-xyzrho";
+			CreateTexture2D(sourceAuthorFolderToken, sourceFramesFolderToken, sourceFileName, arrayOfMins, arrayOfMaxs);
+		}
+
+		[MenuItem("Astroyum/Create 2D Texture from DUSTYTURB tracers")]
+		static void CreateDustyturbTexture2D()
+		{
+			float[] arrayOfMins = new float[4] {0, 0, 0, -3.0f};
+			float[] arrayOfMaxs = new float[4] {1.0E-13f, 1.0E-13f, 1.0E-13f, 3.0f};
+			string sourceAuthorFolderToken = "";
+			string sourceFramesFolderToken = "";
+			string sourceFileName = "dustyturb-tracers-text";
+			CreateTexture2D(sourceAuthorFolderToken, sourceFramesFolderToken, sourceFileName, arrayOfMins, arrayOfMaxs);
+		}
+		
+		[MenuItem("Astroyum/Create 2D Texture from BINARYDISK tracers (legacy)")]
+		static void CreateBinarydiskTexture2D()
+		{
+			float[] arrayOfMins = new float[4] {-6000.0f, -6000.0f, -6000.0f, 0};
+			float[] arrayOfMaxs = new float[4] {6000.0f, 6000.0f, 6000.0f, 4000.0f};
+			string sourceAuthorFolderToken = "";
+			string sourceFramesFolderToken = "";
+			string sourceFileName = "binarydisk-tracers-text";
+			CreateTexture2D(sourceAuthorFolderToken, sourceFramesFolderToken, sourceFileName, arrayOfMins, arrayOfMaxs);
+		}
+		
+		[MenuItem("Astroyum/Create 2D Texture from BINARYDISK FULL tracers (legacy)")]
+		static void CreateBinarydiskfullTexture2D()
+		{
+			float[] arrayOfMins = new float[7] {-5600.0f, -5600.0f, -5600.0f, -0.4f, -0.4f, -0.4f, 0};
+			float[] arrayOfMaxs = new float[7] {5600.0f, 5600.0f, 5600.0f, 0.4f, 0.4f, 0.4f, 3800.0f};
+			string sourceAuthorFolderToken = "";
+			string sourceFramesFolderToken = "";
+			string sourceFileName = "binarydisk-tracers-full-text";
+			CreateTexture2D(sourceAuthorFolderToken, sourceFramesFolderToken, sourceFileName, arrayOfMins, arrayOfMaxs);
+		}
+		
+		[MenuItem("Astroyum/Create 2D Texture from DISKTILT tracers")]
+		static void CreateDisktiltTexture2D()
+		{
+			float[] arrayOfMins = new float[6] {-1.7f, -1.7f, -1.7f, -1.0E-3f, -1.0E-3f, -1.0E-3f};
+			float[] arrayOfMaxs = new float[6] {1.7f, 1.7f, 1.7f, 1.0E-3f, 1.0E-3f, 1.0E-3f};
+			string sourceAuthorFolderToken = "";
+			string sourceFramesFolderToken = "";
+			string sourceFileName = "sph-tracers-text-disktilt-0314";
+			CreateTexture2D(sourceAuthorFolderToken, sourceFramesFolderToken, sourceFileName, arrayOfMins, arrayOfMaxs);
+		}
+		
+		[MenuItem("Astroyum/Create 2D Texture from DISKTILT RHOSOUND tracers")]
+		static void CreateDisktiltRhosoundTexture2D()
+		{
+			float[] arrayOfMins = new float[8] {-2.0f, -2.0f, -2.0f, -1.0E-3f, -1.0E-3f, -1.0E-3f, -10.0f, -7.0f};
+			float[] arrayOfMaxs = new float[8] {2.0f, 2.0f, 2.0f, 1.0E-3f, 1.0E-3f, 1.0E-3f, -4.0f, -5.0f};
+			string sourceAuthorFolderToken = "";
+			string sourceFramesFolderToken = "";
+			string sourceFileName = "sph-tracers-text-disktilt-0314-rho-sound-1-in-20";
+			CreateTexture2D(sourceAuthorFolderToken, sourceFramesFolderToken, sourceFileName, arrayOfMins, arrayOfMaxs);
+		}
+		
+		[MenuItem("Astroyum/Create 2D Textures from DISKTILT 99-frames animation")]
+		static void CreateDisktilt99frames()
+		{
+			float time = Time.realtimeSinceStartup;
+			float[] arrayOfMins = new float[3] {0.0f, 0.0f, 0.0f};
+			float[] arrayOfMaxs = new float[3] {1.0E6f, 1.0E6f, 1.0E6f};
+			for (int f = 0; f <= 98; f++)
+			{
+				string frameName = PreprendZeros(f, 4);
+				string sourceAuthorFolderToken = "disktilt";
+				string sourceFramesFolderToken = "99-frames";
+				string sourceFileName = "sph-disktilt-reduced-" + frameName;
+				CreateTexture2D(sourceAuthorFolderToken, sourceFramesFolderToken, sourceFileName, arrayOfMins, arrayOfMaxs);
+			}
+			
+			Debug.Log("<color=#ff3333ff>[CreateDisktilt99frames] Created and saved 99 textures in " + (Time.realtimeSinceStartup - time) + " seconds 👌</color>");
+		}
+		
+		[MenuItem("Astroyum/Create 2D Textures from DWARFGAL 1-frame xyzrho snapshot")]
+		static void CreateDwarfgal1frame()
+		{
+			float time = Time.realtimeSinceStartup;
+			float[] arrayOfMins = new float[4] {0.0f, 0.0f, 0.0f, 0.0f};
+			float[] arrayOfMaxs = new float[4] {1.0E6f, 1.0E6f, 1.0E6f, 1.0E3f};
+			string sourceAuthorFolderToken = "dwarfgal";
+			string sourceFramesFolderToken = "1-frame";
+			string sourceFileName = "dwarfgal-xyzrho";
+			CreateTexture2D(sourceAuthorFolderToken, sourceFramesFolderToken, sourceFileName, arrayOfMins, arrayOfMaxs);
+		}
+
+		[MenuItem("Astroyum/Create 2D Textures from DWARFGAL 1-frame xyzrhovolBV snapshot")]
+		static void CreateDwarfgal1framePlusPlus()
+		{
+			float time = Time.realtimeSinceStartup;
+			float[] arrayOfMins = new float[11] {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f};
+			float[] arrayOfMaxs = new float[11] {1.0E6f, 1.0E6f, 1.0E6f, 1.0E3f, 1.0E3f, 1.0E3f, 1.0E3f, 1.0E3f, 1.0E3f, 1.0E3f, 1.0E3f};
+			string sourceAuthorFolderToken = "dwarfgal";
+			string sourceFramesFolderToken = "1-frame";
+			string sourceFileName = "dwarfgal-xyzrhovolbxbybzvxvyvz";
+			CreateTexture2D(sourceAuthorFolderToken, sourceFramesFolderToken, sourceFileName, arrayOfMins, arrayOfMaxs);
+		}
+
+		[MenuItem("Astroyum/Create 2D Textures from DWARFGAL 100-frames xyzrhovol animation")]
+		static void CreateDwarfgal100frames()
+		{
+			float time = Time.realtimeSinceStartup;
+			float[] arrayOfMins = new float[5] {0.0f, 0.0f, 0.0f, 0.0f, 0.0f};
+			float[] arrayOfMaxs = new float[5] {1.0E6f, 1.0E6f, 1.0E6f, 1.0E3f, 1.0E3f};
+			int maxSize = 1110;
+
+			for (int f = 1; f <= 100; f++)
+			{
+				string frameName = PreprendZeros(f, 3);
+				string sourceAuthorFolderToken = "dwarfgal";
+				string sourceFramesFolderToken = "100-frames";
+				string sourceFileName = "dwarfgal-xyzrhovol-" + frameName;
+				CreateTexture2D(sourceAuthorFolderToken, sourceFramesFolderToken, sourceFileName, arrayOfMins, arrayOfMaxs, maxSize);
+			}
+			
+			Debug.Log("<color=#ff3333ff>[CreateDwarfgal100frames] Created and saved 100 textures in " + (Time.realtimeSinceStartup - time) + " seconds 👌</color>");
+		
+		}
+
+		[MenuItem("Astroyum/Create 2D Textures from DWARFGAL 500-frames xyz only animation")]
+		static void CreateDwarfgal500frames()
+		{
+			float time = Time.realtimeSinceStartup;
+			float[] arrayOfMins = new float[3] {0.0f, 0.0f, 0.0f};
+			float[] arrayOfMaxs = new float[3] {1.0E6f, 1.0E6f, 1.0E6f};
+			int maxSize = 735;
+
+			for (int f = 1; f <= 500; f++)
+			{
+				string frameName = PreprendZeros(f, 3);
+				string sourceAuthorFolderToken = "dwarfgal";
+				string sourceFramesFolderToken = "500-frames-1-in-3";
+				string sourceFileName = "dwarfgal-xyz-" + frameName + "-1-in-3";
+				CreateTexture2D(sourceAuthorFolderToken, sourceFramesFolderToken, sourceFileName, arrayOfMins, arrayOfMaxs, maxSize);
+			}
+			
+			Debug.Log("<color=#ff3333ff>[CreateDwarfgal500frames] Created and saved 500 textures in " + (Time.realtimeSinceStartup - time) + " seconds 👌</color>");
+		}
+
+		[MenuItem("Astroyum/Create 2D Textures from ZOOMIN 1-frame xyzvxvyvzrholvl snapshot")]
+		static void CreateZoomin1frame()
+		{
+			float time = Time.realtimeSinceStartup;
+			float[] arrayOfMins = new float[8] {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f};
+			float[] arrayOfMaxs = new float[8] {1.0E6f, 1.0E6f, 1.0E6f, 1.0E3f, 1.0E3f, 1.0E3f, 1.0E3f, 1.0E3f};
+			string sourceAuthorFolderToken = "zoomin";
+			string sourceFramesFolderToken = "1-frame";
+			string sourceFileName = "zoomin-xyzvxvyvzrholvl-1-in-3";
+			CreateTexture2D(sourceAuthorFolderToken, sourceFramesFolderToken, sourceFileName, arrayOfMins, arrayOfMaxs);
+		}
+		
+		[MenuItem("Astroyum/Create 2D Textures from BINARYDISK 102-frames xyzrho animation")]
+		static void CreateBinarydisk102frames()
+		{
+			float time = Time.realtimeSinceStartup;
+			float[] arrayOfMins = new float[4] {0.0f, 0.0f, 0.0f, 0.0f};
+			float[] arrayOfMaxs = new float[4] {1.0E6f, 1.0E6f, 1.0E6f, 1.0E3f};
+			int maxSize = 1000;
+
+			for (int f = 1; f <= 102; f++)
+			{
+				string frameName = PreprendZeros(f, 3);
+				string sourceAuthorFolderToken = "binarydisk";
+				string sourceFramesFolderToken = "102-frames";
+				string sourceFileName = "sph-binarydisk-" + frameName;
+				CreateTexture2D(sourceAuthorFolderToken, sourceFramesFolderToken, sourceFileName, arrayOfMins, arrayOfMaxs, maxSize);
+			}
+			
+			Debug.Log("<color=#ff3333ff>[CreateBinarydisk102frames] Created and saved 102 textures in " + (Time.realtimeSinceStartup - time) + " seconds 👌</color>");
+		
+		}
+		
+		[MenuItem("Astroyum/Create 2D Textures from MAXIME REY NEW CLOUD 168-frames xyzrho animation")]
+		static void CreateMaximereynewcloud168frames()
+		{
+			float time = Time.realtimeSinceStartup;
+			float[] arrayOfMins = new float[4] {0.0f, 0.0f, 0.0f, 0.0f};
+			float[] arrayOfMaxs = new float[4] {1.0E6f, 1.0E6f, 1.0E6f, 1.0E3f};
+			int maxSize = 774;
+
+			for (int f = 1; f <= 168; f++)
+			{
+				string frameName = PreprendZeros(f, 3);
+				string sourceAuthorFolderToken = "maximereynewcloud";
+				string sourceFramesFolderToken = "168-frames";
+				string sourceFileName = "maximereynewcloud-xyzrho-" + frameName + "-1-in-10";
+				CreateTexture2D(sourceAuthorFolderToken, sourceFramesFolderToken, sourceFileName, arrayOfMins, arrayOfMaxs, maxSize);
+			}
+			
+			Debug.Log("<color=#ff3333ff>[CreateMaximereynewcloud168frames] Created and saved 168 textures in " + (Time.realtimeSinceStartup - time) + " seconds 👌</color>");
+		
+		}
+
+		[MenuItem("Astroyum/Scan for max texture size of Dwarfgal")]
+		static void ScanForMaxTextureSizeDwarfgal()
+		{
+			int maxSize = 0;
+
+			for (int f = 1; f <= 500; f++)
+			{
+				// Build file name
+				string frameName = PreprendZeros(f, 3);
+				string sourceTextFileName = "dwarfgal/500-frames-1-in-3/dwarfgal-xyz-" + frameName + "-1-in-3";
+				string sourceTextPath = Application.dataPath + "/Textures2D/ParticlesTextData/" + sourceTextFileName + ".txt";
+
+				int size = GetTextureSize(sourceTextPath);
+				if (size > maxSize) {
+					maxSize = size;
+				}
+			}
+
+			Debug.Log("<color=#eeee22ff>[CreateTexture2DFromEditor] Max Dwarfgal texture size is " + maxSize + "</color>");
+
+		}
+
+		[MenuItem("Astroyum/Scan for max texture size of Binarydisk")]
+		static void ScanForMaxTextureSizeBinarydisk()
+		{
+			int maxSize = 0;
+
+			for (int f = 1; f <= 102; f++)
+			{
+				// Build file name
+				string frameName = PreprendZeros(f, 3);
+				string sourceTextFileName = "binarydisk/102-frames/sph-binarydisk-" + frameName;
+				string sourceTextPath = Application.dataPath + "/Textures2D/ParticlesTextData/" + sourceTextFileName + ".txt";
+
+				int size = GetTextureSize(sourceTextPath);
+				if (size > maxSize) {
+					maxSize = size;
+				}
+			}
+
+			Debug.Log("<color=#eeee22ff>[CreateTexture2DFromEditor] Max Binarydisk texture size is " + maxSize + "</color>");
+
+		}
+
+		[MenuItem("Astroyum/Create 2D Textures from FRACTURINGS 1-frame xyz snapshot")]
+		static void CreateFracturings1frame()
+		{
+			float time = Time.realtimeSinceStartup;
+			float[] arrayOfMins = new float[3] {0.0f, 0.0f, 0.0f};
+			float[] arrayOfMaxs = new float[3] {1.0E6f, 1.0E6f, 1.0E6f};
+			string sourceAuthorFolderToken = "fracturings";
+			string sourceFramesFolderToken = "1-frame";
+			string sourceFileName = "fracturings-xyz-0918";
+			CreateTexture2D(sourceAuthorFolderToken, sourceFramesFolderToken, sourceFileName, arrayOfMins, arrayOfMaxs);
+		}
+
+		[MenuItem("Astroyum/Create 2D Textures from ISOLAGAL 1-frame GAS xyz snapshot")]
+		static void CreateIsolagal1frame()
+		{
+			float time = Time.realtimeSinceStartup;
+			float[] arrayOfMins = new float[5] {0.0f, 0.0f, 0.0f, 0.0f, 0.0f};
+			float[] arrayOfMaxs = new float[5] {1.0E6f, 1.0E6f, 1.0E6f, 1.0E3f, 1.0E3f};
+			string sourceAuthorFolderToken = "isolagal";
+			string sourceFramesFolderToken = "1-frame";
+			string sourceFileName = "isolagal-gas-xyz";
+			CreateTexture2D(sourceAuthorFolderToken, sourceFramesFolderToken, sourceFileName, arrayOfMins, arrayOfMaxs);
+		}
+
+		[MenuItem("Astroyum/Create 2D Textures from FREDTHOMPSON 1-frame GAS xyzrho snapshot")]
+		static void CreateFredThompsonGas1frame()
+		{
+			float time = Time.realtimeSinceStartup;
+			float[] arrayOfMins = new float[4] {0.0f, 0.0f, 0.0f, 0.0f};
+			float[] arrayOfMaxs = new float[4] {1.0E6f, 1.0E6f, 1.0E6f, 1.0E3f};
+			string sourceAuthorFolderToken = "fredthompson";
+			string sourceFramesFolderToken = "1-frame";
+			string sourceFileName = "fredthompson-gas-xyzrho";
+			CreateTexture2D(sourceAuthorFolderToken, sourceFramesFolderToken, sourceFileName, arrayOfMins, arrayOfMaxs);
+		}
+
+		[MenuItem("Astroyum/Create 2D Textures from FREDTHOMPSON 1-frame STARS xyzmass snapshot")]
+		static void CreateFredThompsonStars1frame()
+		{
+			float time = Time.realtimeSinceStartup;
+			float[] arrayOfMins = new float[4] {0.0f, 0.0f, 0.0f, 0.0f};
+			float[] arrayOfMaxs = new float[4] {1.0E6f, 1.0E6f, 1.0E6f, 1.0E3f};
+			string sourceAuthorFolderToken = "fredthompson";
+			string sourceFramesFolderToken = "1-frame";
+			string sourceFileName = "fredthompson-stars-xyzmass";
+			CreateTexture2D(sourceAuthorFolderToken, sourceFramesFolderToken, sourceFileName, arrayOfMins, arrayOfMaxs);
+		}
+
+		[MenuItem("Astroyum/Create 2D Textures from FREDTHOMPSON 1-frame CLUSTERS xyzmass snapshot")]
+		static void CreateFredThompsonClusters1frame()
+		{
+			float time = Time.realtimeSinceStartup;
+			float[] arrayOfMins = new float[5] {0.0f, 0.0f, 0.0f, 0.0f, 0.0f};
+			float[] arrayOfMaxs = new float[5] {1.0E6f, 1.0E6f, 1.0E6f, 1.0E3f, 1.0E3f};
+			string sourceAuthorFolderToken = "fredthompson";
+			string sourceFramesFolderToken = "1-frame";
+			string sourceFileName = "fredthompson-clusters-xyzidmass";
+			CreateTexture2D(sourceAuthorFolderToken, sourceFramesFolderToken, sourceFileName, arrayOfMins, arrayOfMaxs);
+		}
+
+		[MenuItem("Astroyum/Create 2D Textures from CHEONSUKANG 1-frame AMR bigbox zoomed snapshot")]
+		static void CreateCheonsuKang1frame()
+		{
+			float time = Time.realtimeSinceStartup;
+			float[] arrayOfMins = new float[9] {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f};
+			float[] arrayOfMaxs = new float[9] {1.0E6f, 1.0E6f, 1.0E6f, 1.0E6f, 1.0E6f, 1.0E6f, 1.0E3f, 1.0E3f, 1.0E3f};
+			string sourceAuthorFolderToken = "cheonsukang";
+			string sourceFramesFolderToken = "1-frame";
+			string sourceFileName = "cheonsukang-bigbox-zoomed-xyzvxvyvzrhopmetal-1-in-4";
+			CreateTexture2D(sourceAuthorFolderToken, sourceFramesFolderToken, sourceFileName, arrayOfMins, arrayOfMaxs);
+		}
+
+		[MenuItem("Astroyum/Create 2D Textures from JAMESSUNSERI 1-frame AMR bigbox zoomed xyzrho snapshot")]
+		static void CreateJamesSunseri1frame()
+		{
+			float time = Time.realtimeSinceStartup;
+			float[] arrayOfMins = new float[4] {0.0f, 0.0f, 0.0f, 0.0f};
+			float[] arrayOfMaxs = new float[4] {1.0E6f, 1.0E6f, 1.0E6f, 1.0E3f};
+			string sourceAuthorFolderToken = "jamessunseri";
+			string sourceFramesFolderToken = "1-frame";
+			string sourceFileName = "jamessunseri-gas-zoomed-xyzrho-1-in-13";
+			CreateTexture2D(sourceAuthorFolderToken, sourceFramesFolderToken, sourceFileName, arrayOfMins, arrayOfMaxs);
+		}
+
+		[MenuItem("Astroyum/Create 2D Textures from SAN HAN GALALXY CLUSTER 1-frame zoomed xyzdensitytemp snapshot")]
+		static void CreateSanHanGalaxyCluster1frame()
+		{
+			float time = Time.realtimeSinceStartup;
+			float[] arrayOfMins = new float[5] {0.0f, 0.0f, 0.0f, 0.0f, 0.0f};
+			float[] arrayOfMaxs = new float[5] {1.0E6f, 1.0E6f, 1.0E6f, 1.0E3f, 1.0E3f};
+			string sourceAuthorFolderToken = "sanhangalaxycluster";
+			string sourceFramesFolderToken = "1-frame";
+			string sourceFileName = "sanhangalaxycluster-xyzdensitytemp-zoomed-1-in-3";
+			CreateTexture2D(sourceAuthorFolderToken, sourceFramesFolderToken, sourceFileName, arrayOfMins, arrayOfMaxs);
+		}
+
+		[MenuItem("Astroyum/Create 2D Textures from MAXIME REY NEW CLOUD 1-frame xyzrho snapshot")]
+		static void CreateMaximeReyNewCloud1frame()
+		{
+			float time = Time.realtimeSinceStartup;
+			float[] arrayOfMins = new float[4] {0.0f, 0.0f, 0.0f, 0.0f};
+			float[] arrayOfMaxs = new float[4] {1.0E6f, 1.0E6f, 1.0E6f, 1.0E3f};
+			string sourceAuthorFolderToken = "maximereynewcloud";
+			string sourceFramesFolderToken = "1-frame";
+			string sourceFileName = "maximereynewcloud-xyzrho";
+			CreateTexture2D(sourceAuthorFolderToken, sourceFramesFolderToken, sourceFileName, arrayOfMins, arrayOfMaxs);
+		}
+
+		[MenuItem("Astroyum/Create 2D Textures from VALENTIN GOY DUST CLUMPING 1-frame-test snapshot")]
+		static void CreateValentinGoyDustClumping1frame()
+		{
+			float time = Time.realtimeSinceStartup;
+			float[] arrayOfMins = new float[12] {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f};
+			float[] arrayOfMaxs = new float[12] {1.0E6f, 1.0E6f, 1.0E6f, 1.0E3f, 1.0E3f, 1.0E3f, 1.0E3f, 1.0E3f, 1.0E3f, 1.0E3f, 1.0E3f, 1.0E3f};
+			string sourceAuthorFolderToken = "valentingoy";
+			string sourceFramesFolderToken = "1-frame-test";
+			string sourceFileName = "valentingoy-all";
+			CreateTexture2D(sourceAuthorFolderToken, sourceFramesFolderToken, sourceFileName, arrayOfMins, arrayOfMaxs);
+		}
+
+		[MenuItem("Astroyum/Create 2D Textures from VALENTIN GOY DUST HD CLUMPING 1-frame-hd-test snapshot")]
+		static void CreateValentinGoyHDDustClumping1frame()
+		{
+			float time = Time.realtimeSinceStartup;
+			float[] arrayOfMins = new float[13] {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f};
+			float[] arrayOfMaxs = new float[13] {1.0E6f, 1.0E3f, 1.0E3f, 1.0E6f, 1.0E6f, 1.0E6f, 1.0E6f, 1.0E6f, 1.0E6f, 1.0E6f, 1.0E6f, 1.0E6f, 1.0E3f};
+
+			string sourceAuthorFolderToken = "valentingoy";
+			string sourceFramesFolderToken = "1-frame-hd-test";
+			string sourceFileName = "valentingoy-allsd";
+			CreateTexture2D(sourceAuthorFolderToken, sourceFramesFolderToken, sourceFileName, arrayOfMins, arrayOfMaxs);
+		}
+
+		[MenuItem("Astroyum/Create 2D Textures from VALENTIN GOY DUST CLUMPING 619-frames animation")]
+		static void CreateValentingoyDustclumping619frames()
+		{
+			float time = Time.realtimeSinceStartup;
+			float[] arrayOfMins = new float[13] {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f};
+			float[] arrayOfMaxs = new float[13] {1.0E6f, 1.0E3f, 1.0E3f, 1.0E3f, 1.0E3f, 1.0E3f, 1.0E3f, 1.0E3f, 1.0E3f, 1.0E3f, 1.0E3f, 1.0E3f, 1.0E6f};
+
+			for (int f = 1; f <= 619; f++)
+			{
+				string frameName = PreprendZeros(f, 3);
+				string sourceAuthorFolderToken = "valentingoy";
+				string sourceFramesFolderToken = "619-frames";
+				string sourceFileName = "valentingoy-allsd-" + frameName;
+				CreateTexture2D(sourceAuthorFolderToken, sourceFramesFolderToken, sourceFileName, arrayOfMins, arrayOfMaxs);
+			}
+			
+			Debug.Log("<color=#ff3333ff>[CreateValentingoyDustclumping619frames] Created and saved 619 textures in " + (Time.realtimeSinceStartup - time) + " seconds 👌</color>");
+		
+		}
+
+		[MenuItem("Astroyum/Create 2D Textures from VALENTIN GOY DUST CLUMPING 1987-frames animation")]
+		static void CreateValentingoyDustclumping1987frames()
+		{
+			float time = Time.realtimeSinceStartup;
+			float[] arrayOfMins = new float[13] {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f};
+			float[] arrayOfMaxs = new float[13] {1.0E6f, 1.0E3f, 1.0E3f, 1.0E3f, 1.0E3f, 1.0E3f, 1.0E3f, 1.0E3f, 1.0E3f, 1.0E3f, 1.0E3f, 1.0E3f, 1.0E6f};
+
+			for (int f = 1; f <= 1987; f++)
+			{
+				string frameName = PreprendZeros(f, 4);
+				string sourceAuthorFolderToken = "valentingoy";
+				string sourceFramesFolderToken = "1987-frames";
+				string sourceFileName = "valentingoy-allsd-" + frameName;
+				CreateTexture2D(sourceAuthorFolderToken, sourceFramesFolderToken, sourceFileName, arrayOfMins, arrayOfMaxs);
+			}
+			
+			Debug.Log("<color=#ff3333ff>[CreateValentingoyDustclumping1987frames] Created and saved 1987 textures in " + (Time.realtimeSinceStartup - time) + " seconds 👌</color>");
+		
+		}
+
+		[MenuItem("Astroyum/Create 2D Textures from MAXIME LOMBART DUSTY COLLAPSE 1-frame-test snapshot")]
+		static void CreateMaximeLombartDustyCollapse1frameTest()
+		{
+			float time = Time.realtimeSinceStartup;
+			float[] arrayOfMins = new float[5] {0.0f, 0.0f, 0.0f, 0.0f, 0.0f};
+			float[] arrayOfMaxs = new float[5] {1.0E6f, 1.0E6f, 1.0E6f, 1.0E3f, 1.0E3f};
+			string sourceAuthorFolderToken = "maximelombart";
+			string sourceFramesFolderToken = "1-frame-test";
+			string sourceFileName = "maximelombart-rhosize";
+			CreateTexture2D(sourceAuthorFolderToken, sourceFramesFolderToken, sourceFileName, arrayOfMins, arrayOfMaxs);
+		}
+
+		[MenuItem("Astroyum/Create 2D Textures from MAXIME LOMBART ZOOMED DUSTY COLLAPSE 1-frame-test snapshot")]
+		static void CreateMaximeLombartZoomedDustyCollapse1frameTest()
+		{
+			float time = Time.realtimeSinceStartup;
+			float[] arrayOfMins = new float[5] {0.0f, 0.0f, 0.0f, 0.0f, 0.0f};
+			float[] arrayOfMaxs = new float[5] {1.0E6f, 1.0E6f, 1.0E6f, 1.0E3f, 1.0E3f};
+			string sourceAuthorFolderToken = "maximelombart";
+			string sourceFramesFolderToken = "1-frame-test";
+			string sourceFileName = "maximelombart-rhosize-zoomed-500";
+			CreateTexture2D(sourceAuthorFolderToken, sourceFramesFolderToken, sourceFileName, arrayOfMins, arrayOfMaxs);
+		}
+
+		[MenuItem("Astroyum/Create 2D Textures from MAXIME LOMBART DUSTY COLLAPSE 1-frame snapshot")]
+		static void CreateMaximeLombartDustyCollapse1frame()
+		{
+			float time = Time.realtimeSinceStartup;
+			float[] arrayOfMins = new float[17] {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f};
+			float[] arrayOfMaxs = new float[17] {1.0E6f, 1.0E6f, 1.0E6f, 1.0E3f, 1.0E3f, 1.0E3f, 1.0E3f, 1.0E3f, 1.0E3f, 1.0E3f, 1.0E3f, 1.0E3f, 1.0E3f, 1.0E3f, 1.0E3f, 1.0E3f, 1.0E3f};
+			string sourceAuthorFolderToken = "maximelombart";
+			string sourceFramesFolderToken = "1-frame";
+			string sourceFileName = "maximelombart-all";
+			CreateTexture2D(sourceAuthorFolderToken, sourceFramesFolderToken, sourceFileName, arrayOfMins, arrayOfMaxs);
+		}
+
+		static int GetTextureSize(string sourceTextPath)
+		{
+			// Read file
+			StreamReader reader = new StreamReader(sourceTextPath);
+			string text = reader.ReadToEnd();
+			reader.Close();
+			string[] lines = text.Split('\n');
+
+			// Compute texture size
+			return (int) Mathf.Ceil(Mathf.Sqrt(lines.Length));//Mathf.Floor(Mathf.Sqrt(lines.Length));
+		}
+
+		// forcedSize is optional (defaults to 0, considered optional)
+		// forcedSize artificially increases texture size with dummy empty colors to match others in a sequence
+		static void CreateTexture2D(string sourceAuthorFolderToken, string sourceFramesFolderToken, string sourceFileName, float[] arrayOfMins, float[] arrayOfMaxs, int forcedSize = 0)
+		{
+			float time = Time.realtimeSinceStartup;
+			
+			// Check how many variables (volumns, values) we have other than xyz
+			int remaining = Mathf.Max(0, arrayOfMins.Length - 3);
+			int numberOfTextures = 1 + (int) Mathf.Ceil(remaining / 3.0f);
+			Debug.Log("<color=#ff33ccff>[CreateTexture2DFromEditor] Data has " + arrayOfMins.Length + " columns. " + numberOfTextures + " textures with name '" + sourceFileName + "' will be generated.</color>");
+			
+			// Read the text directly from the source file
+			string sourcePath = Application.dataPath + "/Textures2D/ParticlesTextData/" + sourceAuthorFolderToken + "/" + sourceFramesFolderToken + "/" + sourceFileName + ".txt";
+			StreamReader reader = new StreamReader(sourcePath);
+			string text = reader.ReadToEnd();
+			reader.Close();
+			
+			string[] lines = text.Split('\n');
+			
+			// Compute size needed to store all data (loses a few points with Floor but makes sure all pixels are filled in a square, even if forcedSize is given)
+			int len = lines.Length;
+			int naturalSizeFloor = (int) Mathf.Floor(Mathf.Sqrt(len));
+			int naturalSizeCeil = (int) Mathf.Ceil(Mathf.Sqrt(len));
+			int size = naturalSizeCeil;
+			if (forcedSize != 0) {
+				if (forcedSize < size) {
+					Debug.LogError("<color=#ff3333ff>[CreateTexture2DFromEditor] forcedSize is lower than naturalSize. Sir, this is bad.</color>");
+				}
+				size = forcedSize;
+			}
+			bool plural = numberOfTextures >= 2;
+			Debug.Log("<color=#ff33ccff>[CreateTexture2DFromEditor] Generating " + numberOfTextures + " texture" + (plural ? "s" : "") + " of size " + size + "x" + size + " (== " + (size * size) + ") from " + lines.Length + " lines of text data...</color>");
+			
+			// Create arrays to store color data (3 variables per color array)
+			// Array of color arrays
+			Color[][] colorArrays = new Color[numberOfTextures][];
+			Texture2D[] textures = new Texture2D[numberOfTextures];
+			for (int co = 0; co < numberOfTextures; co++)
+			{
+				colorArrays[co] = new Color[size * size];
+			}
+			
+			// Choose texture parameters
+			TextureFormat format = TextureFormat.RGBAFloat;
+			TextureWrapMode wrapMode = TextureWrapMode.Clamp;
+			
+			// Create the textures and apply the parameters
+			for (int c = 0; c < numberOfTextures; c++)
+			{
+				Texture2D texture = new Texture2D(size, size, format, false);
+				texture.wrapMode = wrapMode;
+				textures[c] = texture;
+			}
+			
+			// Get the 3 first elements (x, y and z)
+			float xMin = arrayOfMins[0];
+			float yMin = arrayOfMins[1];
+			float zMin = arrayOfMins[2];
+			float xMax = arrayOfMaxs[0];
+			float yMax = arrayOfMaxs[1];
+			float zMax = arrayOfMaxs[2];
+			
+			// Store other elements
+			float[] mins = new float[remaining];
+			float[] maxs = new float[remaining];
+			for (int r = 0; r < remaining; r++)
+			{
+				mins[r] = arrayOfMins[3 + r];
+				maxs[r] = arrayOfMaxs[3 + r];
+			}
+			
+			// Scan all lines (leave some colors unwritten after naturalSize² in case of forcedSize)
+			for (int i = 0; i < len; i++)
+			{
+				string[] fields = lines[i].Split(" ");
+				
+				// Read
+				float x = Convert.ToSingle(fields[0], CultureInfo.InvariantCulture);
+				float y = Convert.ToSingle(fields[1], CultureInfo.InvariantCulture);
+				float z = Convert.ToSingle(fields[2], CultureInfo.InvariantCulture);
+				
+				// Remap
+				float r = math.remap(xMin, xMax, 0.0f, 1.0f, x);
+				float g = math.remap(yMin, yMax, 0.0f, 1.0f, y);
+				float b = math.remap(zMin, zMax, 0.0f, 1.0f, z);
+				
+				// Values other than xyz
+				float[] otherValues = new float[remaining];
+				for (int l = 0; l < remaining; l++)
+				{
+					// Read
+					float val = Convert.ToSingle(fields[3 + l], CultureInfo.InvariantCulture);
+					
+					// Remap
+					otherValues[l] = math.remap(mins[l], maxs[l], 0.0f, 1.0f, val);
+				}
+				
+				// Fill color arrays
+				// First one with x, y, z
+				colorArrays[0][i] = new Color(r, g, b, 1.0f);
+				// Others
+				for (int l = 0; l < numberOfTextures - 1; l++)
+				{
+					// Fill with zeros on the last texture if no data (there should always have data on rr)
+					float rr = otherValues[3 * l];
+					float gg = (3 * l + 1) < remaining ? otherValues[3 * l + 1] : 0.0f; 
+					float bb = (3 * l + 2) < remaining ? otherValues[3 * l + 2] : 0.0f; 
+					colorArrays[1 + l][i] = new Color(rr, gg, bb, 1.0f);
+				}
+			}
+
+			// Copy the color values to the textures
+			for (int t = 0; t < numberOfTextures; t++)
+			{
+				textures[t].SetPixels(colorArrays[t]);
+				
+				// Apply the changes to the texture and upload the updated texture to the GPU
+				textures[t].Apply();
+			}
+			
+			// Save the textures to our Unity Project
+			for (int miam = 0; miam < numberOfTextures; miam++)
+			{
+				byte[] bytes = ImageConversion.EncodeToEXR(textures[miam]);
+
+				// If there are 2 textures or more, create new folders to separate them
+				if (numberOfTextures >= 2) {
+					string potentialFolderName = "dimensions-" + PreprendZeros(1 + 3 * miam, 2) + "-" + PreprendZeros(1 + 3 * miam + 1, 2) + "-" + PreprendZeros(1 + 3 * miam + 2, 2);
+
+					// Check if folder exists, if not create it
+					if (!System.IO.Directory.Exists(Application.dataPath + "/Textures2D/" + sourceAuthorFolderToken + "/" + sourceFramesFolderToken + "/" + potentialFolderName)) {
+						System.IO.Directory.CreateDirectory(Application.dataPath + "/Textures2D/" + sourceAuthorFolderToken + "/" + sourceFramesFolderToken + "/" + potentialFolderName);
+					}
+					System.IO.File.WriteAllBytes(Application.dataPath + "/Textures2D/" + sourceAuthorFolderToken + "/" + sourceFramesFolderToken + "/" + potentialFolderName + "/" + sourceFileName + "-tex-" + size + "-" + (1 + miam) + ".exr", bytes);
+				}
+
+				// Otherwise just write in the main folder
+				else {
+					System.IO.File.WriteAllBytes(Application.dataPath + "/Textures2D/" + sourceAuthorFolderToken + "/" + sourceFramesFolderToken + "/" + sourceFileName + "-tex-" + size + ".exr", bytes);
+				}
+				
+			}
+			
+			// Goodbye thanks
+			Debug.Log("<color=#ff33ccff>[CreateTexture2DFromEditor] Created and saved texture" + (plural ? "s" : "")  + " in " + (Time.realtimeSinceStartup - time) + " seconds 👌</color>");
+			
+		}
+		
+	}
+
+}
+#endif

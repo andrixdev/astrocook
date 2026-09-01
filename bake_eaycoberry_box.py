@@ -12,7 +12,7 @@ def klodufy_emmaaycoberry_box (is_test=False):
     minmaxs = [ [-11, 1] ]
     file_prefix = "density"
 
-    source_file = "./data/emmaaycoberry/1-frame/pressure_map.dat"
+    source_file = "./input/emmaaycoberry/1-frame/pressure_map.dat"
     file_type_token = "DAT"
     size = 512
     quality = "high"

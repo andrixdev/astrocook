@@ -31,7 +31,7 @@ def textufy_valentin_goy_test_clumping(is_test=False):
 	kept_dimensions = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
 	file_prefix = "all"
 	
-	source_file = "./data/valentingoy/1-frame-test/1D_magnetic_clumping_test.hdf5"
+	source_file = "./input/valentingoy/1-frame-test/1D_magnetic_clumping_test.hdf5"
 	file_type_token = "HDF5-GOY"
 	dest_path = "valentingoy/1-frame-test/"
 	dest_file_name = "valentingoy-" + file_prefix + ("-testing" if is_test else "")
@@ -64,7 +64,7 @@ def textufy_valentin_goy_hd_test_clumping(is_test=False):
 	kept_dimensions = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
 	file_prefix = "allsd"
 	
-	source_file = "./data/valentingoy/1-frame-hd-test/1D_4096_test.hdf5"
+	source_file = "./input/valentingoy/1-frame-hd-test/1D_4096_test.hdf5"
 	file_type_token = "HDF5-GOY"
 	dest_path = "valentingoy/1-frame-hd-test/"
 	dest_file_name = "valentingoy-" + file_prefix + ("-testing" if is_test else "")
@@ -90,7 +90,7 @@ def scan_time_array(time):
 def textufy_valentin_goy_103_anim_test():
 	import h5py
 
-	with h5py.File('./data/valentingoy/103-frames-draft/1D_4096_103_frames_draft.hdf5', 'r') as hdf:
+	with h5py.File('./input/valentingoy/103-frames-draft/1D_4096_103_frames_draft.hdf5', 'r') as hdf:
 		# Afficher la structure du fichier
 		hdf.visit(print)
 
@@ -180,26 +180,26 @@ def textufy_valentin_goy_full_anim_part_version(which_part, which_version):
 	start_index = 0
 	end_index = 0
 	if (which_part == 1 and which_version == 1):
-		source_file = "./data/valentingoy/619-frames/Magnetic_clumping_4096_BeforeGrowth_110.hdf5"
+		source_file = "./input/valentingoy/619-frames/Magnetic_clumping_4096_BeforeGrowth_110.hdf5"
 		start_index = 1
 		end_index = 110
 	elif (which_part == 2 and which_version == 1):
-		source_file = "./data/valentingoy/619-frames/Magnetic_clumping_4096_WithGrowth_509.hdf5"
+		source_file = "./input/valentingoy/619-frames/Magnetic_clumping_4096_WithGrowth_509.hdf5"
 		start_index = 111
 		end_index = 619
 	elif (which_part == 1 and which_version == 2):
-		source_file = "./data/valentingoy/1987-frames/Magnetic_clumping_4096_BeforeGrowth_625.hdf5"
+		source_file = "./input/valentingoy/1987-frames/Magnetic_clumping_4096_BeforeGrowth_625.hdf5"
 		start_index = 1
 		end_index = 625
 	elif (which_part == 2 and which_version == 2):
-		source_file = "./data/valentingoy/1987-frames/Magnetic_clumping_4096_WithGrowth_1362.hdf5"
+		source_file = "./input/valentingoy/1987-frames/Magnetic_clumping_4096_WithGrowth_1362.hdf5"
 		start_index = 626
 		end_index = 626 + 1362 - 1
 	elif (which_part == 1 and (which_version == 98 or which_version == 99)): # It's actually still version 2 but we're just extracting time
-		source_file = "./data/valentingoy/1987-frames/Magnetic_clumping_4096_BeforeGrowth_625.hdf5"
+		source_file = "./input/valentingoy/1987-frames/Magnetic_clumping_4096_BeforeGrowth_625.hdf5"
 		end_index = 625
 	elif (which_part == 2 and (which_version == 98 or which_version == 99)): # It's actually still version 2 but we're just extracting sd_max
-		source_file = "./data/valentingoy/1987-frames/Magnetic_clumping_4096_WithGrowth_1362.hdf5"
+		source_file = "./input/valentingoy/1987-frames/Magnetic_clumping_4096_WithGrowth_1362.hdf5"
 		end_index = 1362
 
 	with h5py.File(source_file, 'r') as hdf:

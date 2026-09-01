@@ -20,7 +20,7 @@ def textufy_cheonsukang_bigbox_xyzrho(is_test=False):
 	kept_dimensions = [1, 1, 1, 1]
 	file_prefix = "xyzrho"
 	
-	source_file = "./data/cheonsukang/1-frame/cell_00373.sav"
+	source_file = "./input/cheonsukang/1-frame/cell_00373.sav"
 	file_type_token = "SAV"
 	dest_path = "cheonsukang/1-frame/"
 	dest_file_name = "cheonsukang-bigbox-zoomed-" + file_prefix + ("-testing" if is_test else "")
@@ -42,7 +42,7 @@ def textufy_cheonsukang_bigbox_xyzvxvyvzrhopmetal(is_test=False):
 	kept_dimensions = [1, 1, 1, 1, 1, 1, 1, 1, 1]
 	file_prefix = "xyzvxvyvzrhopmetal"
 
-	source_file = "./data/cheonsukang/1-frame/cell_00373.sav"
+	source_file = "./input/cheonsukang/1-frame/cell_00373.sav"
 	file_type_token = "SAV"
 	dest_path = "cheonsukang/1-frame/"
 	dest_file_name = "cheonsukang-bigbox-zoomed-" + file_prefix + ("-testing" if is_test else "")

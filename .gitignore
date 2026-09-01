@@ -1,2 +1,2 @@
-# Content of data/ and output/ ignored in .gitignore inside these folders because they have to be empty but still committed
+# Content of input/ and output/ ignored in .gitignore inside these folders because they have to be empty but still committed
 __pycache__

@@ -16,11 +16,11 @@ def klodufy_maxime_lombart_collapse (mode, is_test=False):
     do_scan = is_test
 
     if mode == "big":
-        source_file = "./data/maximelombart/1-frame-big-cube/data_cube_256_ramses_output00145_simu_multifluid.npy"
+        source_file = "./input/maximelombart/1-frame-big-cube/data_cube_256_ramses_output00145_simu_multifluid.npy"
         size = 256
         dest_path = "maximelombart/1-frame-big-cube/"
     else:
-        source_file = "./data/maximelombart/1-frame-cube/data_cube_128_ramses_output00040_simu_multifluid.npy"
+        source_file = "./input/maximelombart/1-frame-cube/data_cube_128_ramses_output00040_simu_multifluid.npy"
         size = 128
         dest_path = "maximelombart/1-frame-cube/"
 

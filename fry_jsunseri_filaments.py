@@ -21,7 +21,7 @@ def textufy_james_sunseri_gas_xyzrho(is_test=False):
 	kept_dimensions = [1, 1, 1, 0, 1]
 	file_prefix = "xyzrho"
 	
-	source_file = "./data/jamessunseri/1-frame/MDG_gas.h5"
+	source_file = "./input/jamessunseri/1-frame/MDG_gas.h5"
 	file_type_token = "HDF5"
 	dest_path = "jamessunseri/1-frame/"
 	dest_file_name = "jamessunseri-gas-zoomed-" + file_prefix + ("-testing" if is_test else "")
@@ -43,7 +43,7 @@ def textufy_james_sunseri_stars_xyzmass(is_test=False):
 	kept_dimensions = [1, 1, 1, 1]
 	file_prefix = "xyzmass"
 	
-	source_file = "./data/jamessunseri/1-frame/MDG_stars.h5"
+	source_file = "./input/jamessunseri/1-frame/MDG_stars.h5"
 	file_type_token = "HDF5"
 	dest_path = "jamessunseri/1-frame/"
 	dest_file_name = "jamessunseri-stars-zoomed-" + file_prefix + ("-testing" if is_test else "")
