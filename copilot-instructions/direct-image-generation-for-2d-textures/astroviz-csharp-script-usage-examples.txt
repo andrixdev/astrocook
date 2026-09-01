@@ -1,0 +1,81 @@
+[MenuItem("Astroyum/Create 2D Textures from MAXIME LOMBART DUSTY COLLAPSE 1-frame snapshot")]
+static void CreateMaximeLombartDustyCollapse1frame()
+{
+	float time = Time.realtimeSinceStartup;
+	float[] arrayOfMins = new float[17] {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f};
+	float[] arrayOfMaxs = new float[17] {1.0E6f, 1.0E6f, 1.0E6f, 1.0E3f, 1.0E3f, 1.0E3f, 1.0E3f, 1.0E3f, 1.0E3f, 1.0E3f, 1.0E3f, 1.0E3f, 1.0E3f, 1.0E3f, 1.0E3f, 1.0E3f, 1.0E3f};
+	string sourceAuthorFolderToken = "maximelombart";
+	string sourceFramesFolderToken = "1-frame";
+	string sourceFileName = "maximelombart-all";
+	CreateTexture2DFromEditor.CreateTexture2D(sourceAuthorFolderToken, sourceFramesFolderToken, sourceFileName, arrayOfMins, arrayOfMaxs);
+}
+
+
+
+[MenuItem("Astroyum/Create 2D Textures from SAN HAN GALALXY CLUSTER 1-frame zoomed xyzdensitytemp snapshot")]
+static void CreateSanHanGalaxyCluster1frame()
+{
+	float time = Time.realtimeSinceStartup;
+	float[] arrayOfMins = new float[5] {0.0f, 0.0f, 0.0f, 0.0f, 0.0f};
+	float[] arrayOfMaxs = new float[5] {1.0E6f, 1.0E6f, 1.0E6f, 1.0E3f, 1.0E3f};
+	string sourceAuthorFolderToken = "sanhangalaxycluster";
+	string sourceFramesFolderToken = "1-frame";
+	string sourceFileName = "sanhangalaxycluster-xyzdensitytemp-zoomed-1-in-3";
+	CreateTexture2DFromEditor.CreateTexture2D(sourceAuthorFolderToken, sourceFramesFolderToken, sourceFileName, arrayOfMins, arrayOfMaxs);
+}
+
+
+
+
+[MenuItem("Astroyum/Create 2D Textures from ISOLAGAL 1-frame GAS xyz snapshot")]
+static void CreateIsolagal1frame()
+{
+	float time = Time.realtimeSinceStartup;
+	float[] arrayOfMins = new float[5] {0.0f, 0.0f, 0.0f, 0.0f, 0.0f};
+	float[] arrayOfMaxs = new float[5] {1.0E6f, 1.0E6f, 1.0E6f, 1.0E3f, 1.0E3f};
+	string sourceAuthorFolderToken = "isolagal";
+	string sourceFramesFolderToken = "1-frame";
+	string sourceFileName = "isolagal-gas-xyz";
+	CreateTexture2DFromEditor.CreateTexture2D(sourceAuthorFolderToken, sourceFramesFolderToken, sourceFileName, arrayOfMins, arrayOfMaxs);
+}
+
+[MenuItem("Astroyum/Create 2D Textures from DWARFGAL 500-frames xyz only animation")]
+static void CreateDwarfgal500frames()
+{
+	float time = Time.realtimeSinceStartup;
+	float[] arrayOfMins = new float[3] {0.0f, 0.0f, 0.0f};
+	float[] arrayOfMaxs = new float[3] {1.0E6f, 1.0E6f, 1.0E6f};
+	int maxSize = 735;
+
+	for (int f = 1; f <= 500; f++)
+	{
+		string frameName = CreateTexture2DFromEditor.PrependZeros(f, 3);
+		string sourceAuthorFolderToken = "dwarfgal";
+		string sourceFramesFolderToken = "500-frames-1-in-3";
+		string sourceFileName = "dwarfgal-xyz-" + frameName + "-1-in-3";
+		CreateTexture2DFromEditor.CreateTexture2D(sourceAuthorFolderToken, sourceFramesFolderToken, sourceFileName, arrayOfMins, arrayOfMaxs, maxSize);
+	}
+	
+	Debug.Log("<color=#ff3333ff>[CreateDwarfgal500frames] Created and saved 500 textures in " + (Time.realtimeSinceStartup - time) + " seconds 👌</color>");
+}
+
+
+[MenuItem("Astroyum/Create 2D Textures from VALENTIN GOY DUST CLUMPING 1987-frames animation")]
+static void CreateValentingoyDustclumping1987frames()
+{
+	float time = Time.realtimeSinceStartup;
+	float[] arrayOfMins = new float[13] {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f};
+	float[] arrayOfMaxs = new float[13] {1.0E6f, 1.0E3f, 1.0E3f, 1.0E3f, 1.0E3f, 1.0E3f, 1.0E3f, 1.0E3f, 1.0E3f, 1.0E3f, 1.0E3f, 1.0E3f, 1.0E6f};
+
+	for (int f = 1; f <= 1987; f++)
+	{
+		string frameName = CreateTexture2DFromEditor.PrependZeros(f, 4);
+		string sourceAuthorFolderToken = "valentingoy";
+		string sourceFramesFolderToken = "1987-frames";
+		string sourceFileName = "valentingoy-allsd-" + frameName;
+		CreateTexture2DFromEditor.CreateTexture2D(sourceAuthorFolderToken, sourceFramesFolderToken, sourceFileName, arrayOfMins, arrayOfMaxs);
+	}
+	
+	Debug.Log("<color=#ff3333ff>[CreateValentingoyDustclumping1987frames] Created and saved 1987 textures in " + (Time.realtimeSinceStartup - time) + " seconds 👌</color>");
+
+}

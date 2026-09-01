@@ -3,18 +3,21 @@
 Python scripts to generate 2D and 3D textures for Unity out of various astrophysics data formats  
 
 **klodufy.py** creates 3D textures for Unity out of uniform cube density maps (voxel clouds)  
-**particles_textufy.py** creates text files with rows of particles data for Unity to transform into 2D textures  
+**particles_textufy.py** creates text files with rows of particles data for Unity  
+**texturify_2d.py** then converts particle text data directly into 2D EXR texture images for Unity VFX Graph sampling  
 
 ## Usage
 
 - Install Python 3.13 (max verison supported by *sarracen* package as of 2025-10)  
-- Install *numpy*, *scipy*, *sarracen* and *h5py* packages running `pip install numpy`, `pip install scipy`, `pip install sarracen` and `pip install h5py` 
-- Install *loguru* running `pip install loguru` 
+- Install core packages: `pip install numpy scipy sarracen h5py loguru`
+- Install *OpenEXR* for 2D texture generation: `pip install OpenEXR` 
 - Run `py klodufy.py` or `python klodufy.py` depending on your main Python CLI call.  
 - The *input* directory contains sources, while *output* contains your exported text files.
 - The *input* directory is left empty, for you to fill it with relevant data files.
 - Adapt the script by commenting or uncommenting revelant code sections.  
-- Edit file according to your needs.   
+- Edit file according to your needs.  
+- Currently, **bake_*.py** scripts exacts the Unity 3D Texture generation pipeline
+- Currently, **fry_*.py** scripts orchestrate the first half of Unity 2D texture generation pipeline (from data to text) while **plate_*.py** scripts take care of the second half (from text to image).  
 
 ## Branches
 

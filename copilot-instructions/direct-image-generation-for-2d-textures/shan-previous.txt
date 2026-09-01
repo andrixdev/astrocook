@@ -1,0 +1,10 @@
+static void CreateSanHanGalaxyCluster1frame()
+{
+    float time = Time.realtimeSinceStartup;
+    float[] arrayOfMins = new float[5] {0.0f, 0.0f, 0.0f, 0.0f, 0.0f};
+    float[] arrayOfMaxs = new float[5] {1.0E6f, 1.0E6f, 1.0E6f, 1.0E3f, 1.0E3f};
+    string sourceAuthorFolderToken = "sanhangalaxycluster";
+    string sourceFramesFolderToken = "1-frame";
+    string sourceFileName = "sanhangalaxycluster-xyzdensitytemp-zoomed-1-in-3";
+    CreateTexture2DFromEditor.CreateTexture2D(sourceAuthorFolderToken, sourceFramesFolderToken, sourceFileName, arrayOfMins, arrayOfMaxs);
+}
