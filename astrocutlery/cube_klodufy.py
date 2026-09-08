@@ -318,6 +318,9 @@ def klodu_scan (data, log_ratio_text, base_count, actual_count, x_range, y_range
     end_time = datetime.datetime.now()
     delta = end_time.timestamp() - start_time.timestamp()
     logger.success("Scanned data in: " + str(round(delta, 2)) + " seconds.")
+
+    # Return minmaxs for potential scanning of entire animations (calling klodufy in batches)
+    return real_minmaxs
     
 def klodu_export(data, log_ratio_text, actual_count, dest_path, dest_file_name, base_size, testing_density, size, minmaxs, quality, x_range, y_range, z_range, step, dimensions, nb_logs):
 
@@ -442,14 +445,20 @@ def klodufy (source_file, file_type_token, size, dimensions, minmaxs, quality, d
     y_range = loop_vars[5]
     z_range = loop_vars[6]
     step = loop_vars[7]
+
+    # Prepare minmaxs
+    scanned_minmaxs = []
     
     # LOOP 1: scan & detect extreme values
     if (is_scanning):
-        klodu_scan(data, log_ratio_text, base_count, actual_count, x_range, y_range, z_range, step, dimensions, nb_logs)
+        scanned_minmaxs = klodu_scan(data, log_ratio_text, base_count, actual_count, x_range, y_range, z_range, step, dimensions, nb_logs)
     
     # LOOP 2: normalize so it fits max resolution
     if (is_exporting):
         klodu_export(data, log_ratio_text, actual_count, dest_path, dest_file_name, base_size, testing_density, size, minmaxs, quality, x_range, y_range, z_range, step, dimensions, nb_logs)
+
+    # Return minmaxs (& detected cube size now...) for potential scanning of entire animations (calling klodufy in batches)
+    return [ scanned_minmaxs, base_size ]
 
 # Count points in pointcloud to create 3D texture (voxel cloud), or add their density
 def klodufy_txt (source_file, size, source_xyz_min, source_xyz_max, quality, dest_path, dest_file_name, testing_density, nb_logs):
