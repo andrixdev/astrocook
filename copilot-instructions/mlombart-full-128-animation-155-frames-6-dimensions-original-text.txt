@@ -1,0 +1,22 @@
+The current script bake_mlombart_dustycollapse.py processes one cube containing a numpy array with 20 dimensions of an astrophysics simulation dump into 6 cubes of compiled physics cubes (Unity 3D Textures) with the klodu_export method.
+
+Now, I have not only 1 simulation dump but 151. The goal is to write a new method in the script that processes not just 1 but all 151 steps of the animation into 151 x 6 cubes.
+
+The new input directory is input/maximelombart/151-frames.
+The new output directory is output/maximelombart/151-frames.
+The output directory contains 6 sub-directories corresponding to each exported set of 151 frames of a specific physics dimension: rho, v, vdust, sd, B and current.
+For instance, all 'rho' outputted cubes (Unity 3D Textures) should end up in output/maximelombart/151-frames/rho.
+The 6 output sub-directories have already been created.
+
+Note on determining minimal and maximal values: the current klodufy_maxime_lombart_collapse method specifies minmaxs arrays with explicit values. In the new script, the minmaxs of all exported cubes of a given dimension should be the extrema of all 151 dumps for the specific dimension. The overall scanning phase should determine all the minmaxs arrays (print them in a new text file in case something goes wrong, so we don't have to rerun the whole scanning), then the export phase should output all 6 x 151 cubes.
+
+There is no more 'mode' argument as we will use only cubes of a size of 128.
+The input file naming structure is the following: cube_128_output_11.npy, cube_128_output_12.npy, cube_128_output_13.npy, ..., cube_128_output_20.npy, ..., cube_128_output_99.npy, cube_128_output_100.npy, cube_128_output_101.npy, ..., cube_128_output_165.npy.
+The indexing does not have prepended zeros, so index string length varies (from 11 to 165).
+First frame index is 11, last frame index is 165.
+
+The 'quality' parameter should remain "low".
+
+Propose a global is_test argument that runs with a test density of 1/13.
+
+Do not run the script once generated, I will run it myself with the is_test argument set to True. Prepare the main call with the argument set to True.
