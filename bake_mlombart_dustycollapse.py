@@ -206,8 +206,80 @@ def klodufy_maxime_lombart_collapse (mode, is_test=False):
 
     klodu_export(B, log_ratio_text, actual_count, dest_path, dest_file_name, base_size, testing_density, size, minmaxs, quality, x_range, y_range, z_range, step, dimensions, nb_logs)
 
+def klodufy_maxime_lombart_collapse_BxByBz(is_test):
+
+    # Going with big cube
+    source_file = "./input/maximelombart/1-frame-big-cube/data_cube_256_ramses_output00145_simu_multifluid.npy"
+    size = 256
+    dest_path = "maximelombart/1-frame-big-cube/"
+
+    file_type_token = "NUMPY-MLOMBART"
+    quality = "high"
+    dimensions = [ ["dummy", "linear"] ]
+    cubes = prepare_data_cube(source_file, file_type_token, dimensions)
+
+    logger.info("Dictionary keys are: " + str(cubes.keys()))
+
+    # This time we only extract the Bx, By, and Bz components from the data cube
+    B_x_left = cubes["B_left_x"]
+    B_y_left = cubes["B_left_y"]
+    B_z_left = cubes["B_left_z"]
+    B_x_right = cubes["B_right_x"]
+    B_y_right = cubes["B_right_y"]
+    B_z_right = cubes["B_right_z"]
+    B = np.zeros((size, size, size, 3))
+
+    for i in range(0, size):
+        for j in range(0, size):
+            for k in range(0, size):
+                Bx = 0.5 * (B_x_left[i, j, k] + B_x_right[i, j, k])
+                By = 0.5 * (B_y_left[i, j, k] + B_y_right[i, j, k])
+                Bz = 0.5 * (B_z_left[i, j, k] + B_z_right[i, j, k])
+
+                B[i, j, k, 0] = Bx
+                B[i, j, k, 1] = By
+                B[i, j, k, 2] = Bz
+
+    logger.info("Generated 3-dimensional B field cube")
+    logger.info("B shape: " + str(B.shape))
+
+    # Preparing scan and export
+    testing_density = 1/1 if not is_test else 1/10
+    nb_logs = 200
+
+    loop_vars = compute_loop_variables(B, testing_density)
+    log_ratio_text = loop_vars[0]
+    base_size = loop_vars[1]
+    base_count = loop_vars[2]
+    actual_count = loop_vars[3]
+    x_range = loop_vars[4]
+    y_range = loop_vars[5]
+    z_range = loop_vars[6]
+    step = loop_vars[7]
+
+    # Scanning newly compiled cube
+    dimensions = [ ["Bx", "linear"], ["By", "linear"], ["Bz", "linear"] ]
+
+    do_scan = False
+
+    if do_scan:
+        klodu_scan(B, log_ratio_text, base_count, actual_count, x_range, y_range, z_range, step, dimensions, nb_logs)
+
+    # Scanning results
+    minmaxs = [ [-0.005, 0.005], [-0.005, 0.005], [-0.005, 0.005] ]
+
+    # Exporting 3-dimensional B-cube
+    file_prefix = "BxByBz"
+    dest_file_name = "maxime-lombart-cube-" + file_prefix + "-" + str(size) + ("-testing" if is_test else "")
+
+    do_export = True
+
+    if do_export:
+        klodu_export(B, log_ratio_text, actual_count, dest_path, dest_file_name, base_size, testing_density, size, minmaxs, quality, x_range, y_range, z_range, step, dimensions, nb_logs)
+
 
 if __name__ == "__main__":
     is_test = False
     # klodufy_maxime_lombart_collapse("normal", is_test)
-    klodufy_maxime_lombart_collapse("big", is_test)
+    # klodufy_maxime_lombart_collapse("big", is_test)
+    klodufy_maxime_lombart_collapse_BxByBz(is_test)
