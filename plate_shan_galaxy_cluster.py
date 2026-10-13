@@ -8,7 +8,6 @@
 from loguru import logger
 from astrocutlery.texturify_2d import create_texture_2d
 
-
 # San Han galaxy cluster
 def plate_san_han_galaxy_cluster_xyzdensitytemp(is_test=False):
 	"""

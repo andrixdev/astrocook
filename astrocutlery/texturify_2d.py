@@ -50,7 +50,7 @@ def read_text_data(file_path: str) -> list:
     return data
 
 
-def create_rgba_arrays(data: list, mins: list, maxs: list) -> Tuple[list, int]:
+def create_rgba_arrays(data: list, dimension_qualities: list) -> Tuple[list, int]:
     """
     Create RGBA color arrays from parsed data.
     Groups first 3 values (x,y,z) into first texture.
@@ -61,7 +61,7 @@ def create_rgba_arrays(data: list, mins: list, maxs: list) -> Tuple[list, int]:
     - num_textures: number of textures created
     """
     num_lines = len(data)
-    num_dimensions = len(mins)
+    num_dimensions = len(dimension_qualities)
     
     # Calculate number of textures (1 for x,y,z + ceil((remaining)/3))
     remaining = max(0, num_dimensions - 3)
@@ -76,9 +76,15 @@ def create_rgba_arrays(data: list, mins: list, maxs: list) -> Tuple[list, int]:
     # Process each data line
     for pixel_idx, values in enumerate(data):
         # Extract and normalize x, y, z
-        x = normalize_value(values[0], mins[0], maxs[0])
-        y = normalize_value(values[1], mins[1], maxs[1])
-        z = normalize_value(values[2], mins[2], maxs[2])
+
+        # LQ quality -> min of 0 and max of 1000
+        # HQ quality -> min of 0 and max of 1000000
+        mins = 0
+        quality = dimension_qualities[0]
+        maxs = 1000 if quality == "LQ" else 1000000
+        x = normalize_value(values[0], mins, maxs)
+        y = normalize_value(values[1], mins, maxs)
+        z = normalize_value(values[2], mins, maxs)
         
         # First texture always gets x, y, z
         color_arrays[0][pixel_idx * 4 + 0] = x
@@ -89,10 +95,20 @@ def create_rgba_arrays(data: list, mins: list, maxs: list) -> Tuple[list, int]:
         # Additional textures get remaining values (3 per texture)
         for tex_idx in range(1, num_textures):
             base_dim = 3 + (tex_idx - 1) * 3
-            
-            r = normalize_value(values[base_dim], mins[base_dim], maxs[base_dim]) if base_dim < num_dimensions else 0.0
-            g = normalize_value(values[base_dim + 1], mins[base_dim + 1], maxs[base_dim + 1]) if base_dim + 1 < num_dimensions else 0.0
-            b = normalize_value(values[base_dim + 2], mins[base_dim + 2], maxs[base_dim + 2]) if base_dim + 2 < num_dimensions else 0.0
+
+            # LQ quality -> min of 0 and max of 1000
+            # HQ quality -> min of 0 and max of 1000000
+            min = 0
+            r_quality = dimension_qualities[base_dim] if base_dim < num_dimensions else "HQ"
+            r_max = 1000 if r_quality == "LQ" else 1000000
+            g_quality = dimension_qualities[base_dim] if base_dim < num_dimensions else "HQ"
+            g_max = 1000 if g_quality == "LQ" else 1000000
+            b_quality = dimension_qualities[base_dim] if base_dim < num_dimensions else "HQ"
+            b_max = 1000 if b_quality == "LQ" else 1000000
+
+            r = normalize_value(values[base_dim], min, r_max) if base_dim < num_dimensions else 0.0
+            g = normalize_value(values[base_dim + 1], min, g_max) if base_dim + 1 < num_dimensions else 0.0
+            b = normalize_value(values[base_dim + 2], min, b_max) if base_dim + 2 < num_dimensions else 0.0
             
             color_arrays[tex_idx][pixel_idx * 4 + 0] = r
             color_arrays[tex_idx][pixel_idx * 4 + 1] = g
@@ -124,8 +140,7 @@ def create_texture_2d(
     source_author_folder: str,
     source_frames_folder: str,
     source_file_name: str,
-    array_of_mins: list,
-    array_of_maxs: list,
+    dimension_qualities: list,
     output_base_dir: str,
     forced_size: Optional[int] = None
 ) -> None:
@@ -144,7 +159,7 @@ def create_texture_2d(
     import time
     start_time = time.time()
     
-    num_dimensions = len(array_of_mins)
+    num_dimensions = len(dimension_qualities)
     remaining = max(0, num_dimensions - 3)
     num_textures = 1 + math.ceil(remaining / 3.0)
     
@@ -158,7 +173,7 @@ def create_texture_2d(
     num_lines = len(data)
     
     # Create color arrays
-    color_arrays, num_textures, natural_size = create_rgba_arrays(data, array_of_mins, array_of_maxs)
+    color_arrays, num_textures, natural_size = create_rgba_arrays(data, dimension_qualities)
     
     # Apply forced size if specified
     size = forced_size if forced_size else natural_size

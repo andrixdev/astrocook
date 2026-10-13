@@ -95,8 +95,34 @@ def textufy_maxime_lombart_collapse(is_test=False):
 
     particles_textufy(source_file, file_type_token, dest_path, dest_file_name, dimensions, kept_dimensions, minmaxs, testing_density, nb_logs, is_scanning, is_exporting)
 
+def textufy_maxime_lombart_amr(is_test):
+    dimensions = [
+        ["x", "linear", "HQ"],
+        ["y", "linear", "HQ"],
+        ["z", "linear", "HQ"],
+        ["dx", "log", "HQ"],
+        ["rhogas", "log", "HQ"],
+        ["speak", "log", "HQ"]
+    ]
+    minmaxs = [ [-4000, 4000], [-4000, 4000], [-4000, 4000], [0.5, 2.5], [-20, -11], [-5, -1] ]
+
+    kept_dimensions = [ 1, 1, 1, 1, 1, 1 ]
+    file_prefix = "amr"
+    frame_index = 145
+    source_file = "./input/maximelombart/1-frame-amr/data_amr_output_" + str(frame_index) + ".npy"
+    file_type_token = "NUMPY"
+    dest_path = "maximelombart/1-frame-amr/"
+    dest_file_name = "maximelombart-" + file_prefix + "-" + prepend_zeros(frame_index, 4) + ("-testing" if is_test else "")
+    testing_density = 1/1 if not is_test else 1/10
+    nb_logs = 30
+    is_scanning = False
+    is_exporting = True
+
+    particles_textufy(source_file, file_type_token, dest_path, dest_file_name, dimensions, kept_dimensions, minmaxs, testing_density, nb_logs, is_scanning, is_exporting)
      
 if __name__ == "__main__":
     # textufy_maxime_lombart_test_collapse()
     # textufy_maxime_lombart_zoomed_test_collapse()
-    textufy_maxime_lombart_collapse()
+    # textufy_maxime_lombart_collapse()
+    is_test = False
+    textufy_maxime_lombart_amr(is_test)
