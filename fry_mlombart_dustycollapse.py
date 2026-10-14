@@ -114,9 +114,9 @@ def textufy_maxime_lombart_amr(is_test):
     dest_path = "maximelombart/1-frame-amr/"
     dest_file_name = "maximelombart-" + file_prefix + "-" + prepend_zeros(frame_index, 4) + ("-testing" if is_test else "")
     testing_density = 1/1 if not is_test else 1/10
-    nb_logs = 30
-    is_scanning = False
-    is_exporting = True
+    nb_logs = 300
+    is_scanning = True
+    is_exporting = False
 
     particles_textufy(source_file, file_type_token, dest_path, dest_file_name, dimensions, kept_dimensions, minmaxs, testing_density, nb_logs, is_scanning, is_exporting)
      
